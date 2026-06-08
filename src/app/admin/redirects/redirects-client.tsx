@@ -82,7 +82,7 @@ export default function RedirectsClient() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300">
       <div>
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Redirects Manager</h1>
         <p className="text-slate-500 mt-1">Configure 301 and 302 URL redirects to preserve SEO juice when routing paths change.</p>

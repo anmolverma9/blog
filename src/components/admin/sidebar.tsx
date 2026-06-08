@@ -12,7 +12,9 @@ import {
   Image,
   Shuffle,
   Settings,
-  Sparkles
+  Sparkles,
+  Menu,
+  UserCircle
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -30,8 +32,10 @@ export default function Sidebar({ session }: SidebarProps) {
     { label: 'Pages', href: '/admin/pages', icon: Files, show: isSuperAdminOrEditor },
     { label: 'Categories & Tags', href: '/admin/categories', icon: FolderOpen, show: isSuperAdminOrEditor },
     { label: 'Media Library', href: '/admin/media', icon: Image, show: true },
+    { label: 'Navigation', href: '/admin/navigation', icon: Menu, show: isSuperAdminOrEditor },
     { label: '301 Redirects', href: '/admin/redirects', icon: Shuffle, show: isSuperAdminOrEditor },
     { label: 'Settings', href: '/admin/settings', icon: Settings, show: isSuperAdminOrEditor },
+    { label: 'My Profile', href: '/admin/profile', icon: UserCircle, show: true },
   ];
 
   return (

@@ -66,6 +66,11 @@ export class SettingsService {
   async getGoogleAnalyticsId(): Promise<string> {
     return (await this.getSetting('google_analytics_id')) || '';
   }
+
+  // Theme Helpers
+  async getBrandColor(): Promise<string> {
+    return (await this.getSetting('brand_color')) || '';
+  }
 }
 
 export const settingsService = new SettingsService();

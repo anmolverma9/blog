@@ -188,40 +188,45 @@ export default function MediaClient() {
 
       {/* Detailed Edit Modal */}
       <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
-        <DialogContent className="max-w-2xl bg-white flex flex-col md:flex-row gap-6 max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-3xl bg-white flex flex-col md:flex-row gap-6 max-h-[85vh] overflow-y-auto">
           {selectedItem && (
             <>
               {/* Preview */}
-              <div className="flex-1 min-w-[200px] border border-slate-100 bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center p-2">
-                <img src={selectedItem.file_path} alt="Preview" className="max-w-full max-h-[300px] md:max-h-[400px] object-contain rounded" />
+              <div className="flex-1 min-w-[260px] md:max-w-[380px] h-[220px] md:h-[280px] border border-slate-100 bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center p-2 shrink-0">
+                <img src={selectedItem.file_path} alt="Preview" className="max-w-full max-h-full object-contain rounded" />
               </div>
 
               {/* Edit Details */}
-              <div className="flex-1 space-y-4 flex flex-col justify-between">
-                <div className="space-y-4">
-                  <DialogHeader className="border-b pb-2">
-                    <DialogTitle className="text-base font-bold text-slate-900 truncate">
+              <div className="flex-1 min-w-0 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <DialogHeader className="border-b pb-1.5">
+                    <DialogTitle className="text-sm font-bold text-slate-900 truncate">
                       File Properties
                     </DialogTitle>
                   </DialogHeader>
 
-                  <div className="space-y-1 text-xs text-slate-500 font-medium">
-                    <p><span className="text-slate-400">Name:</span> {selectedItem.filename}</p>
-                    <p><span className="text-slate-400">Type:</span> {selectedItem.mime_type}</p>
-                    <p><span className="text-slate-400">Size:</span> {formatBytes(selectedItem.file_size)}</p>
-                    <p><span className="text-slate-400">URL:</span> <code className="bg-slate-50 px-1 py-0.5 border rounded select-all font-mono text-[10px]">{selectedItem.file_path}</code></p>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-slate-500 font-medium">
+                    <div className="col-span-2 break-all"><span className="text-slate-400">Name:</span> {selectedItem.filename}</div>
+                    <div><span className="text-slate-400">Type:</span> {selectedItem.mime_type}</div>
+                    <div><span className="text-slate-400">Size:</span> {formatBytes(selectedItem.file_size)}</div>
+                    <div className="col-span-2 break-all mt-0.5">
+                      <span className="text-slate-400">URL:</span>{' '}
+                      <code className="bg-slate-50 px-1 py-0.5 border rounded select-all font-mono text-[10px] break-all whitespace-normal">
+                        {selectedItem.file_path}
+                      </code>
+                    </div>
                   </div>
 
-                  <div className="h-px bg-slate-100" />
+                  <div className="h-px bg-slate-100 my-2" />
 
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Alternative Text (Alt)</label>
                       <Input
                         value={altText}
                         onChange={(e) => setAltText(e.target.value)}
                         placeholder="Describe the image content..."
-                        className="h-9 text-xs border-slate-200"
+                        className="h-8.5 text-xs border-slate-200"
                       />
                     </div>
 
@@ -231,16 +236,16 @@ export default function MediaClient() {
                         value={titleText}
                         onChange={(e) => setTitleText(e.target.value)}
                         placeholder="Image title tag..."
-                        className="h-9 text-xs border-slate-200"
+                        className="h-8.5 text-xs border-slate-200"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2 pt-4 border-t mt-4">
+                <div className="flex gap-2 pt-3 border-t mt-4">
                   <Button
                     onClick={handleSaveMeta}
-                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold h-9 gap-1"
+                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold h-8.5 gap-1"
                     disabled={updatingMeta}
                   >
                     {updatingMeta ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
@@ -249,7 +254,7 @@ export default function MediaClient() {
                   <Button
                     variant="outline"
                     onClick={handleDelete}
-                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 text-xs font-bold h-9 gap-1"
+                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 text-xs font-bold h-8.5 gap-1"
                     disabled={deleting}
                   >
                     {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}

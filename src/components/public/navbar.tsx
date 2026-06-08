@@ -5,8 +5,20 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, Sparkles, Menu, X } from 'lucide-react';
 
-export default function Navbar() {
+interface NavbarProps {
+  menuItems?: Array<{
+    label: string;
+    url: string;
+  }>;
+}
+
+export default function Navbar({ menuItems = [] }: NavbarProps) {
   const router = useRouter();
+  const displayLinks = menuItems.length > 0 ? menuItems : [
+    { label: 'Articles', url: '/posts' },
+    { label: 'Tech', url: '/posts?category=technology' },
+    { label: 'Marketing', url: '/posts?category=marketing' },
+  ];
   const [search, setSearch] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -43,10 +55,11 @@ export default function Navbar() {
 
         {/* Links (Desktop) */}
         <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
-          <Link href="/posts" className="hover:text-orange-500 transition-colors">Articles</Link>
-          <Link href="/posts?category=technology" className="hover:text-orange-500 transition-colors">Tech</Link>
-          <Link href="/posts?category=marketing" className="hover:text-orange-500 transition-colors">Marketing</Link>
-          <Link href="/admin" className="text-orange-500 hover:text-orange-600 transition-colors">CMS Login</Link>
+          {displayLinks.map((link, idx) => (
+            <Link key={idx} href={link.url} className="hover:text-orange-500 transition-colors">
+              {link.label}
+            </Link>
+          ))}
         </div>
 
         {/* Mobile menu trigger */}
@@ -74,11 +87,16 @@ export default function Navbar() {
 
           {/* Links Mobile */}
           <div className="flex flex-col gap-3 font-semibold text-slate-700">
-            <Link href="/posts" className="hover:text-orange-500 py-1" onClick={() => setMobileMenuOpen(false)}>All Articles</Link>
-            <Link href="/posts?category=technology" className="hover:text-orange-500 py-1" onClick={() => setMobileMenuOpen(false)}>Technology</Link>
-            <Link href="/posts?category=marketing" className="hover:text-orange-500 py-1" onClick={() => setMobileMenuOpen(false)}>Marketing</Link>
-            <div className="h-px bg-slate-100 my-1" />
-            <Link href="/admin" className="text-orange-500 hover:text-orange-600 py-1" onClick={() => setMobileMenuOpen(false)}>Portal Access</Link>
+            {displayLinks.map((link, idx) => (
+              <Link
+                key={idx}
+                href={link.url}
+                className="hover:text-orange-500 py-1"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from './navbar';
 import Footer from './footer';
 import { settingsService } from '@/modules/settings';
+import { menuService } from '@/modules/menus';
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
@@ -12,6 +13,10 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
   const gaId = await settingsService.getGoogleAnalyticsId();
   const headerScripts = await settingsService.getHeaderScripts();
   const footerScripts = await settingsService.getFooterScripts();
+
+  // Load header menu dynamically
+  const headerMenu = await menuService.getMenuBySlug('header');
+  const menuItems = headerMenu?.items || [];
 
   return (
     <>
@@ -44,7 +49,7 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
       )}
 
       {/* Navigation Bar */}
-      <Navbar />
+      <Navbar menuItems={menuItems} />
 
       {/* Main Workspace content */}
       <div className="flex-1 bg-slate-50/50 flex flex-col">
