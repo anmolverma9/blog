@@ -111,6 +111,10 @@ export class PostRepository {
       whereClauses.push('p.status = ?');
       params.push(options.status);
       countParams.push(options.status);
+
+      if (options.status === 'published') {
+        whereClauses.push('(p.published_at IS NULL OR p.published_at <= NOW())');
+      }
     }
 
     if (options.authorId) {

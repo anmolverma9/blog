@@ -115,3 +115,92 @@ export function generateArticleSchema(post: {
     },
   };
 }
+
+/**
+ * Generates JSON-LD schema markup for FAQs.
+ */
+export function generateFAQSchema(items: Array<{ question: string; answer: string }>) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': items.map(item => ({
+      '@type': 'Question',
+      'name': item.question,
+      'acceptedAnswer': {
+        '@type': 'Answer',
+        'text': item.answer
+      }
+    }))
+  };
+}
+
+/**
+ * Generates JSON-LD schema markup for Product Reviews.
+ */
+export function generateReviewSchema(review: {
+  productName: string;
+  rating: number;
+  ratingMax: number;
+  summary: string;
+  authorName: string;
+  buyUrl?: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    'name': review.productName,
+    'review': {
+      '@type': 'Review',
+      'author': {
+        '@type': 'Person',
+        'name': review.authorName
+      },
+      'reviewRating': {
+        '@type': 'Rating',
+        'ratingValue': review.rating,
+        'bestRating': review.ratingMax
+      },
+      'reviewBody': review.summary
+    }
+  };
+}
+
+/**
+ * Generates JSON-LD schema markup for Breadcrumbs.
+ */
+export function generateBreadcrumbSchema(links: Array<{ name: string; url: string }>) {
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': links.map((link, idx) => ({
+      '@type': 'ListItem',
+      'position': idx + 1,
+      'name': link.name,
+      'item': link.url.startsWith('http') ? link.url : `${siteUrl}${link.url}`
+    }))
+  };
+}
+
+/**
+ * Generates JSON-LD schema markup for How-To instructions.
+ */
+export function generateHowToSchema(howto: {
+  name: string;
+  description: string;
+  steps: Array<{ name: string; text: string; url?: string }>
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    'name': howto.name,
+    'description': howto.description,
+    'step': howto.steps.map((step, idx) => ({
+      '@type': 'HowToStep',
+      'position': idx + 1,
+      'name': step.name,
+      'text': step.text,
+      'url': step.url
+    }))
+  };
+}

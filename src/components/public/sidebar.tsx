@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Folder, Eye } from 'lucide-react';
 
+import SidebarNewsletter from './sidebar-newsletter';
+
 interface SidebarProps {
   categories: Array<{ id?: number; name: string; slug: string }>;
   trendingPosts: Array<{ id?: number; title: string; slug: string; views?: number }>;
@@ -26,6 +28,21 @@ export default function Sidebar({ categories, trendingPosts }: SidebarProps) {
           <p className="font-semibold text-slate-700">
             This blog is Phase 1 of a larger modular SaaS ecosystem that includes Helpdesk, Ad Network, and Marketplace.
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Newsletter Widget */}
+      <Card className="border-slate-200 shadow-sm bg-white">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-800">
+            Newsletter Signup
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 pt-0">
+          <p className="text-slate-500 text-xs leading-relaxed">
+            Get premium articles on SaaS development, SEO tips, and CMS optimizations.
+          </p>
+          <SidebarNewsletter />
         </CardContent>
       </Card>
 

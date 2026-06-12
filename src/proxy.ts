@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-pathname', pathname);
@@ -55,7 +55,7 @@ export async function middleware(req: NextRequest) {
         }
       }
     } catch (err) {
-      console.error('Middleware redirect check error:', err);
+      console.error('Proxy redirect check error:', err);
     }
   }
 

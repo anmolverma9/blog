@@ -75,6 +75,7 @@ async function main() {
       { name: 'Super Admin', description: 'Full access to the ecosystem' },
       { name: 'Editor', description: 'Can manage all blog content' },
       { name: 'Author', description: 'Can manage own blog content' },
+      { name: 'Contributor', description: 'Can submit blog drafts for review' },
       { name: 'Reader', description: 'End reader/subscriber' }
     ];
 
@@ -108,6 +109,7 @@ async function main() {
     const [[superAdminRole]] = await connection.query('SELECT id FROM roles WHERE name = ?', ['Super Admin']);
     const [[editorRole]] = await connection.query('SELECT id FROM roles WHERE name = ?', ['Editor']);
     const [[authorRole]] = await connection.query('SELECT id FROM roles WHERE name = ?', ['Author']);
+    const [[contributorRole]] = await connection.query('SELECT id FROM roles WHERE name = ?', ['Contributor']);
 
     const [perms] = await connection.query('SELECT id, permission_key FROM permissions');
     const permMap = perms.reduce((acc, p) => {
@@ -125,7 +127,9 @@ async function main() {
       { roleId: editorRole.id, permId: permMap['manage_all_content'] },
       { roleId: editorRole.id, permId: permMap['manage_own_content'] },
       // Author gets own content
-      { roleId: authorRole.id, permId: permMap['manage_own_content'] }
+      { roleId: authorRole.id, permId: permMap['manage_own_content'] },
+      // Contributor gets own content
+      { roleId: contributorRole.id, permId: permMap['manage_own_content'] }
     ];
 
     for (const m of mappings) {
@@ -140,13 +144,13 @@ async function main() {
     const [users] = await connection.query('SELECT id FROM users LIMIT 1');
     if (users.length === 0) {
       console.log('Seeding default Super Admin user...');
-      const adminEmail = 'admin@appluxe.com';
+      const adminEmail = 'dscurlock@mail.com';
       const adminPassword = 'adminpassword123';
       const passwordHash = await bcrypt.hash(adminPassword, 10);
 
       const [userResult] = await connection.query(
         'INSERT INTO users (email, password_hash, name, role_id, status) VALUES (?, ?, ?, ?, ?)',
-        [adminEmail, passwordHash, 'AppLuxe Super Admin', superAdminRole.id, 'active']
+        [adminEmail, passwordHash, 'D. Scurlock', superAdminRole.id, 'active']
       );
 
       const userId = userResult.insertId;
@@ -161,7 +165,6 @@ async function main() {
       console.log('DEFAULT ADMIN USER SEEDED:');
       console.log(`Email:    ${adminEmail}`);
       console.log(`Password: ${adminPassword}`);
-      console.log('Please change the password upon your first login.');
       console.log('====================================================');
     } else {
       console.log('Users already exist, skipping admin seeding.');

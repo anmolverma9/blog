@@ -64,9 +64,10 @@ export default function Footer() {
             <h4 className="text-white font-bold text-sm tracking-wider uppercase">Resources</h4>
             <div className="flex flex-col gap-2.5 text-xs">
               <Link href="/about" className="hover:text-white transition-colors">About Us</Link>
-              <Link href="/contact" className="hover:text-white transition-colors">Contact Support</Link>
-              <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+              <Link href="/kb" className="hover:text-white transition-colors">Help Center (KB)</Link>
+              <Link href="/software" className="hover:text-white transition-colors">Software Directory</Link>
+              <Link href="/archives" className="hover:text-white transition-colors">Timeline Archives</Link>
+              <Link href="/posts/submit" className="hover:text-white transition-colors">Write For Us (Guest Post)</Link>
             </div>
           </div>
 

@@ -5,8 +5,10 @@ import LayoutWrapper from '@/components/public/layout-wrapper';
 import Sidebar from '@/components/public/sidebar';
 import { postService } from '@/modules/posts';
 import { categoryService } from '@/modules/categories';
-import { generateArticleSchema } from '@/lib/seo';
+import { generateArticleSchema, generateFAQSchema, generateReviewSchema, generateBreadcrumbSchema } from '@/lib/seo';
 import { Button, buttonVariants } from '@/components/ui/button';
+import BlocksRenderer from '@/components/public/blocks-renderer';
+import VisualRenderer from '@/components/public/visual-renderer';
 import {
   Clock,
   Eye,
@@ -68,8 +70,18 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
   // Fetch post details (increments view count dynamically)
   const post = await postService.getPostBySlug(slug, 'en');
 
-  if (!post) {
+  if (!post || post.status !== 'published' || (post.published_at && new Date(post.published_at) > new Date())) {
     notFound();
+  }
+
+  // Load blocks from post.meta.editor_blocks if it exists
+  let blocks: any[] | null = null;
+  if (post.meta && post.meta.editor_blocks) {
+    try {
+      blocks = JSON.parse(post.meta.editor_blocks);
+    } catch (e) {
+      console.error('Failed to parse blocks inside slug view:', e);
+    }
   }
 
   // Fetch related and sidebar items
@@ -112,93 +124,70 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
     category_name: post.category_name || undefined,
   });
 
+  const schemas: any[] = [jsonLdSchema];
+  if (blocks) {
+    // 1. FAQ Schema
+    const faqBlocks = blocks.filter((b: any) => b.type === 'faq');
+    if (faqBlocks.length > 0) {
+      const allFaqItems = faqBlocks.flatMap((b: any) => b.data.items || []);
+      const validItems = allFaqItems.filter((item: any) => item.question && item.answer);
+      if (validItems.length > 0) {
+        schemas.push(generateFAQSchema(validItems));
+      }
+    }
+
+    // 2. Review Schema
+    const reviewBlocks = blocks.filter((b: any) => b.type === 'review');
+    reviewBlocks.forEach((b: any) => {
+      if (b.data.productName) {
+        schemas.push(generateReviewSchema({
+          productName: b.data.productName,
+          rating: b.data.rating || 5,
+          ratingMax: b.data.ratingMax || 5,
+          summary: b.data.summary || '',
+          authorName: post.author_name || 'AppLuxe Editor',
+          buyUrl: b.data.buyUrl
+        }));
+      }
+    });
+  }
+
+  // 3. Breadcrumb Schema
+  const breadcrumbs = [
+    { name: 'Home', url: '/' },
+    { name: 'Posts', url: '/posts' },
+  ];
+  if (post.category_name && post.category_slug) {
+    breadcrumbs.push({ name: post.category_name, url: `/categories/${post.category_slug}` });
+  }
+  breadcrumbs.push({ name: post.title, url: `/posts/${post.slug}` });
+  schemas.push(generateBreadcrumbSchema(breadcrumbs));
+
   return (
     <LayoutWrapper>
-      {/* Inject Structured Data Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSchema) }}
-      />
+      {/* Inject Structured Data Schemas */}
+      {schemas.map((schema, idx) => (
+        <script
+          key={idx}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-in fade-in duration-300">
-        {/* Ad Block Placeholder (Header) */}
-        <div className="bg-slate-100/80 border text-[10px] font-semibold text-slate-400 py-3 text-center rounded-2xl mb-8 tracking-wider uppercase">
-          Advertisement Block
-        </div>
+      {post.meta && post.meta.editor_type === 'visual' ? (
+        <VisualRenderer data={JSON.parse(post.meta.editor_blocks)} />
+      ) : (
+        (() => {
+          const postLayout = (post.meta && post.meta.post_layout) || 'layout_a';
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Main article body */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Header info */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase">
-                <span className="text-orange-500">{post.category_name || 'General'}</span>
-                <span>•</span>
-                <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" /> {post.read_time} min read</span>
-                <span>•</span>
-                <span className="flex items-center gap-0.5"><Eye className="h-3 w-3" /> {(post.views ?? 0).toLocaleString()} views</span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-                {post.title}
-              </h1>
-
-              {/* Author bio details */}
-              <div className="flex items-center gap-3 pt-2 border-y border-slate-100 py-3">
-                <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold shrink-0">
-                  {post.author_name ? post.author_name.charAt(0).toUpperCase() : 'A'}
-                </div>
-                <div className="text-xs">
-                  <p className="font-bold text-slate-800">By {post.author_name}</p>
-                  <p className="text-slate-400 mt-0.5">
-                    Published on {post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'Draft'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Featured Image */}
-            <div className="rounded-3xl overflow-hidden border border-slate-100 aspect-video bg-slate-50 relative">
-              {post.featured_image_path ? (
-                <img
-                  src={post.featured_image_path}
-                  alt={post.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-300">
-                  <BookOpen className="h-16 w-16" />
-                </div>
-              )}
-            </div>
-
-            {/* Layout layout wrapper: TOC + Article content */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {/* Desktop Table of Contents (Left) */}
-              {headings.length > 0 && (
-                <div className="hidden md:block md:col-span-1 space-y-4 h-fit sticky top-20">
-                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1">
-                    <TrendingUp className="h-3.5 w-3.5 text-orange-500" />
-                    On This Page
-                  </h4>
-                  <ul className="space-y-2 text-xs font-semibold text-slate-500 border-l border-slate-100 pl-3">
-                    {headings.map((heading, idx) => (
-                      <li key={idx}>
-                        <a
-                          href={`#${heading.id}`}
-                          className="hover:text-orange-500 block transition-colors py-0.5"
-                        >
-                          {heading.text}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Markdown Content (Right) */}
-              <div className={`${headings.length > 0 ? 'md:col-span-3' : 'md:col-span-4'} prose prose-slate max-w-none text-slate-700 leading-relaxed text-sm space-y-6`}>
-                {/* Basic rendering of markdown body (splitting paragraphs and styling titles) */}
-                {post.content.split('\n\n').map((para, idx) => {
+          // Helper content body renderer
+          const renderContentBody = () => {
+            if (blocks && blocks.length > 0) {
+              return <BlocksRenderer blocks={blocks} />;
+            }
+            return (
+              <div className="space-y-6">
+                {contentText.split('\n\n').map((para, idx) => {
                   if (para.startsWith('## ')) {
                     const text = para.replace('## ', '');
                     const id = text
@@ -222,7 +211,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                   }
                   
                   // Video Embed parser helper
-                  // Checks for YouTube URL [video](https://www.youtube.com/watch?v=...)
                   const ytRegex = /\[video\]\((?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)\)/i;
                   const ytMatch = para.match(ytRegex);
                   if (ytMatch && ytMatch[1]) {
@@ -245,9 +233,37 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                   return <p key={idx} className="leading-relaxed whitespace-pre-wrap">{para}</p>;
                 })}
               </div>
-            </div>
+            );
+          };
 
-            {/* Social Sharing Widget */}
+          // Helper author bio renderer
+          const renderAuthorBlock = () => (
+            <div className="flex items-center gap-3 py-2">
+              <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold shrink-0">
+                {post.author_name ? post.author_name.charAt(0).toUpperCase() : 'A'}
+              </div>
+              <div className="text-xs">
+                <p className="font-bold text-slate-800">By {post.author_name}</p>
+                <p className="text-slate-400 mt-0.5">
+                  Published on {post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'Draft'}
+                </p>
+              </div>
+            </div>
+          );
+
+          // Helper metadata info renderer
+          const renderMetaInfo = () => (
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase">
+              <span className="text-orange-500">{post.category_name || 'General'}</span>
+              <span>•</span>
+              <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" /> {post.read_time} min read</span>
+              <span>•</span>
+              <span className="flex items-center gap-0.5"><Eye className="h-3 w-3" /> {(post.views ?? 0).toLocaleString()} views</span>
+            </div>
+          );
+
+          // Helper social sharing links renderer
+          const renderSocialSharing = () => (
             <div className="border-y border-slate-100 py-4 flex items-center justify-between gap-4 flex-wrap">
               <span className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
                 <Share2 className="h-4 w-4 text-orange-500" /> Share This Article:
@@ -294,13 +310,10 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                 </a>
               </div>
             </div>
+          );
 
-            {/* Ad Block Placeholder (Footer) */}
-            <div className="bg-slate-100/80 border text-[10px] font-semibold text-slate-400 py-6 text-center rounded-2xl tracking-wider uppercase">
-              In-Article Placement Box
-            </div>
-
-            {/* Related Posts */}
+          // Helper related posts renderer
+          const renderRelatedPosts = () => (
             <div className="space-y-4 pt-4">
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                 <Sparkles className="h-4.5 w-4.5 text-orange-500" />
@@ -339,8 +352,10 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                 </div>
               )}
             </div>
+          );
 
-            {/* Static Comments System Architecture */}
+          // Helper comments section renderer
+          const renderCommentsSection = () => (
             <div className="border border-slate-100 bg-white p-6 rounded-2xl space-y-4">
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-1.5">
                 <MessageSquare className="h-4.5 w-4.5 text-orange-500" />
@@ -362,7 +377,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
               </div>
 
               {/* Form placeholder */}
-              <form className="space-y-3 pt-3 border-t border-slate-100">
+              <form className="space-y-3 pt-3 border-t border-slate-100" onSubmit={(e) => e.preventDefault()}>
                 <p className="text-xs font-bold text-slate-600">Leave a Reply</p>
                 <textarea
                   placeholder="Write your comment here..."
@@ -374,14 +389,188 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                 </Button>
               </form>
             </div>
-          </div>
+          );
 
-          {/* Right Column: Sidebar */}
-          <div>
-            <Sidebar categories={categoriesList} trendingPosts={trending} />
-          </div>
-        </div>
-      </div>
+          // Layout B: Centered Narrow Minimal Reading Document
+          if (postLayout === 'layout_b') {
+            return (
+              <div className="max-w-3xl mx-auto py-10 animate-in fade-in duration-300 space-y-8">
+                <div className="text-center space-y-4">
+                  {renderMetaInfo()}
+                  <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight max-w-2xl mx-auto">
+                    {post.title}
+                  </h1>
+                  {post.summary && <p className="text-slate-500 text-sm max-w-xl mx-auto">{post.summary}</p>}
+                  <div className="flex justify-center border-y border-slate-100 py-1.5 max-w-md mx-auto">
+                    {renderAuthorBlock()}
+                  </div>
+                </div>
+
+                <div className="rounded-3xl overflow-hidden border border-slate-150 shadow-md bg-slate-50 max-h-[450px]">
+                  {post.featured_image_path ? (
+                    <img src={post.featured_image_path} alt={post.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="h-64 flex items-center justify-center text-slate-300">
+                      <BookOpen className="h-16 w-16" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="prose prose-slate lg:prose-lg max-w-none text-slate-800 leading-relaxed text-base">
+                  {renderContentBody()}
+                </div>
+
+                <div className="pt-4 space-y-8">
+                  {renderSocialSharing()}
+                  {renderRelatedPosts()}
+                  {renderCommentsSection()}
+                </div>
+              </div>
+            );
+          }
+
+          // Layout C: Bold Magazine Split Hero
+          if (postLayout === 'layout_c') {
+            return (
+              <div className="py-10 animate-in fade-in duration-300 space-y-10">
+                {/* Hero section */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-slate-200 pb-10">
+                  <div className="lg:col-span-7 space-y-4">
+                    {renderMetaInfo()}
+                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-none text-slate-900">
+                      {post.title}
+                    </h1>
+                    {post.summary && (
+                      <p className="text-base sm:text-lg text-slate-500 leading-relaxed border-l-4 border-orange-500 pl-4 italic">
+                        {post.summary}
+                      </p>
+                    )}
+                    <div className="pt-2">
+                      {renderAuthorBlock()}
+                    </div>
+                  </div>
+                  <div className="lg:col-span-5">
+                    <div className="rounded-3xl overflow-hidden border border-slate-100 shadow-2xl aspect-[4/3] bg-slate-50">
+                      {post.featured_image_path ? (
+                        <img src={post.featured_image_path} alt={post.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                          <BookOpen className="h-16 w-16" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Body Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                  <div className="lg:col-span-2 space-y-8">
+                    <div className="prose prose-slate max-w-none text-slate-700 leading-relaxed text-sm">
+                      {renderContentBody()}
+                    </div>
+                    {renderSocialSharing()}
+                    {renderRelatedPosts()}
+                    {renderCommentsSection()}
+                  </div>
+                  
+                  {/* Sidebar */}
+                  <div>
+                    <Sidebar categories={categoriesList} trendingPosts={trending} />
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          // Layout A (Default): Standard detailed with left TOC and right Sidebar
+          return (
+            <div className="editorial-container py-10 animate-in fade-in duration-300">
+              {/* Ad Block Placeholder (Header) */}
+              <div className="bg-slate-100/80 border text-[10px] font-semibold text-slate-400 py-3 text-center rounded-2xl mb-8 tracking-wider uppercase">
+                Advertisement Block
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                {/* Main article body */}
+                <div className="lg:col-span-2 space-y-8">
+                  {/* Header info */}
+                  <div className="space-y-4">
+                    {renderMetaInfo()}
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                      {post.title}
+                    </h1>
+
+                    {/* Author bio details */}
+                    <div className="border-y border-slate-100 py-1">
+                      {renderAuthorBlock()}
+                    </div>
+                  </div>
+
+                  {/* Featured Image */}
+                  <div className="rounded-3xl overflow-hidden border border-slate-100 aspect-video bg-slate-50 relative">
+                    {post.featured_image_path ? (
+                      <img
+                        src={post.featured_image_path}
+                        alt={post.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-300">
+                        <BookOpen className="h-16 w-16" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Layout layout wrapper: TOC + Article content */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    {/* Desktop Table of Contents (Left) */}
+                    {headings.length > 0 && (
+                      <div className="hidden md:block md:col-span-1 space-y-4 h-fit sticky top-20">
+                        <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1">
+                          <TrendingUp className="h-3.5 w-3.5 text-orange-500" />
+                          On This Page
+                        </h4>
+                        <ul className="space-y-2 text-xs font-semibold text-slate-500 border-l border-slate-100 pl-3">
+                          {headings.map((heading, idx) => (
+                            <li key={idx}>
+                              <a
+                                href={`#${heading.id}`}
+                                className="hover:text-orange-500 block transition-colors py-0.5"
+                              >
+                                {heading.text}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Content body (Right) */}
+                    <div className={`${headings.length > 0 ? 'md:col-span-3' : 'md:col-span-4'} prose prose-slate max-w-none text-slate-700 leading-relaxed text-sm`}>
+                      {renderContentBody()}
+                    </div>
+                  </div>
+
+                  {renderSocialSharing()}
+
+                  {/* Ad Block Placeholder (Footer) */}
+                  <div className="bg-slate-100/80 border text-[10px] font-semibold text-slate-400 py-6 text-center rounded-2xl tracking-wider uppercase">
+                    In-Article Placement Box
+                  </div>
+
+                  {renderRelatedPosts()}
+                  {renderCommentsSection()}
+                </div>
+
+                {/* Right Column: Sidebar */}
+                <div>
+                  <Sidebar categories={categoriesList} trendingPosts={trending} />
+                </div>
+              </div>
+            </div>
+          );
+        })()
+      )}
     </LayoutWrapper>
   );
 }

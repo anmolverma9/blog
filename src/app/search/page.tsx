@@ -36,7 +36,7 @@ export default async function SearchResultsPage({ searchParams }: SearchPageProp
 
   return (
     <LayoutWrapper>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-in fade-in duration-300">
+      <div className="editorial-container py-10 space-y-8 animate-in fade-in duration-300">
         {/* Banner */}
         <div className="bg-slate-900 rounded-2xl p-6 md:p-8 text-white relative overflow-hidden shadow-sm">
           <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-orange-500 rounded-full blur-3xl opacity-20" />

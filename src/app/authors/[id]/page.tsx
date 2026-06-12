@@ -59,7 +59,7 @@ export default async function AuthorProfilePage({ params }: AuthorPageProps) {
 
   return (
     <LayoutWrapper>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-in fade-in duration-300">
+      <div className="editorial-container py-10 space-y-8 animate-in fade-in duration-300">
         {/* Author Bio Banner */}
         <div className="bg-white border border-slate-100 rounded-3xl p-8 shadow-sm flex flex-col md:flex-row items-center gap-6">
           <div className="h-20 w-20 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-extrabold text-2xl shrink-0">

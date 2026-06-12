@@ -59,7 +59,7 @@ export default async function PublicPostsListingPage({ searchParams }: PostsPage
 
   return (
     <LayoutWrapper>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-in fade-in duration-300">
+      <div className="editorial-container py-10 space-y-8 animate-in fade-in duration-300">
         {/* Active Filter Banners */}
         {(categorySlug || tagSlug || search) && (
           <div className="bg-orange-50 border border-orange-100 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">

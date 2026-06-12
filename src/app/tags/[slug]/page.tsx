@@ -51,7 +51,7 @@ export default async function TagListingPage({ params }: TagPageProps) {
 
   return (
     <LayoutWrapper>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-in fade-in duration-300">
+      <div className="editorial-container py-10 space-y-8 animate-in fade-in duration-300">
         {/* Banner */}
         <div className="bg-white border border-slate-100 rounded-3xl p-8 shadow-sm flex items-center gap-4">
           <div className="bg-orange-50 text-orange-600 p-4 rounded-2xl shadow-sm shrink-0">

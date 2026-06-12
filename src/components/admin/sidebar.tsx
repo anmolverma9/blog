@@ -14,7 +14,12 @@ import {
   Settings,
   Sparkles,
   Menu,
-  UserCircle
+  UserCircle,
+  Type,
+  Search,
+  HelpCircle,
+  Layers,
+  CheckSquare
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -29,12 +34,17 @@ export default function Sidebar({ session }: SidebarProps) {
   const menuItems = [
     { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, show: true },
     { label: 'Posts', href: '/admin/posts', icon: FileText, show: true },
+    { label: 'Editorial Queue', href: '/admin/editorial', icon: CheckSquare, show: isSuperAdminOrEditor },
     { label: 'Pages', href: '/admin/pages', icon: Files, show: isSuperAdminOrEditor },
     { label: 'Categories & Tags', href: '/admin/categories', icon: FolderOpen, show: isSuperAdminOrEditor },
     { label: 'Media Library', href: '/admin/media', icon: Image, show: true },
     { label: 'Navigation', href: '/admin/navigation', icon: Menu, show: isSuperAdminOrEditor },
+    { label: 'Knowledge Base', href: '/admin/kb', icon: HelpCircle, show: true },
+    { label: 'Software Directory', href: '/admin/software', icon: Layers, show: isSuperAdminOrEditor },
     { label: '301 Redirects', href: '/admin/redirects', icon: Shuffle, show: isSuperAdminOrEditor },
+    { label: 'SEO Center', href: '/admin/seo', icon: Search, show: isSuperAdminOrEditor },
     { label: 'Settings', href: '/admin/settings', icon: Settings, show: isSuperAdminOrEditor },
+    { label: 'Typography', href: '/admin/settings/typography', icon: Type, show: isSuperAdminOrEditor },
     { label: 'My Profile', href: '/admin/profile', icon: UserCircle, show: true },
   ];
 
@@ -54,11 +64,13 @@ export default function Sidebar({ session }: SidebarProps) {
           .filter(item => item.show)
           .map((item) => {
             const Icon = item.icon;
-            // Check if current path matches item href (exact match for admin dashboard, prefix match for others)
+            // Check if current path matches item href (exact match for dashboard and general settings, prefix match for others)
             const isActive =
               item.href === '/admin'
                 ? pathname === '/admin'
-                : pathname.startsWith(item.href);
+                : item.href === '/admin/settings'
+                  ? pathname === '/admin/settings'
+                  : pathname.startsWith(item.href);
 
             return (
               <Link
