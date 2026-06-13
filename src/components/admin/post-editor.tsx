@@ -832,30 +832,32 @@ export default function PostEditor({ postId }: PostEditorProps) {
                     </div>
 
                     {/* Featured Image */}
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Featured Image</label>
-                      {featuredImagePath ? (
-                        <div className="relative group border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
-                          <img src={featuredImagePath} alt="Featured cover" className="w-full h-24 object-cover" />
+                    {session?.role !== 'Contributor' && (
+                      <div className="space-y-1.5">
+                        <label className="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Featured Image</label>
+                        {featuredImagePath ? (
+                          <div className="relative group border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                            <img src={featuredImagePath} alt="Featured cover" className="w-full h-24 object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => setMediaModalOpen(true)}
+                              className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 text-[10px] font-bold flex items-center justify-center transition-all"
+                            >
+                              Change Image
+                            </button>
+                          </div>
+                        ) : (
                           <button
                             type="button"
                             onClick={() => setMediaModalOpen(true)}
-                            className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 text-[10px] font-bold flex items-center justify-center transition-all"
+                            className="w-full h-20 border border-dashed border-slate-200 hover:border-orange-400 rounded-lg flex flex-col items-center justify-center gap-1 text-slate-400"
                           >
-                            Change Image
+                            <ImageIcon className="h-5 w-5" />
+                            <span className="text-[10px] font-bold">Select Cover</span>
                           </button>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setMediaModalOpen(true)}
-                          className="w-full h-20 border border-dashed border-slate-200 hover:border-orange-400 rounded-lg flex flex-col items-center justify-center gap-1 text-slate-400"
-                        >
-                          <ImageIcon className="h-5 w-5" />
-                          <span className="text-[10px] font-bold">Select Cover</span>
-                        </button>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Publishing Status */}
                     <div className="space-y-1.5">
@@ -867,7 +869,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
                       >
                         <option value="draft">Draft</option>
                         <option value="pending_review">Pending Review</option>
-                        {session?.role !== 'Contributor' && (
+                        {session?.role !== 'Contributor' && session?.role !== 'Author' && (
                           <>
                             <option value="scheduled">Scheduled</option>
                             <option value="published">Published</option>
@@ -1305,7 +1307,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
                 >
                   <option value="draft">Draft</option>
                   <option value="pending_review">Pending Review</option>
-                  {session?.role !== 'Contributor' && (
+                  {session?.role !== 'Contributor' && session?.role !== 'Author' && (
                     <>
                       <option value="scheduled">Scheduled</option>
                       <option value="published">Published</option>
@@ -1463,32 +1465,34 @@ export default function PostEditor({ postId }: PostEditorProps) {
           </Card>
 
           {/* Featured Image Selector Card */}
-          <Card className="border-slate-200 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider">Featured Image</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {featuredImagePath ? (
-                <div className="relative group border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
-                  <img src={featuredImagePath} alt="Featured cover" className="w-full h-40 object-cover" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                    <Button variant="secondary" size="sm" onClick={() => setMediaModalOpen(true)}>
-                      Replace Image
-                    </Button>
+          {session?.role !== 'Contributor' && (
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider">Featured Image</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {featuredImagePath ? (
+                  <div className="relative group border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                    <img src={featuredImagePath} alt="Featured cover" className="w-full h-40 object-cover" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <Button variant="secondary" size="sm" onClick={() => setMediaModalOpen(true)}>
+                        Replace Image
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setMediaModalOpen(true)}
-                  className="w-full h-32 border-2 border-dashed border-slate-200 hover:border-orange-400 rounded-lg flex flex-col items-center justify-center gap-1.5 text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  <ImageIcon className="h-6 w-6" />
-                  <span className="text-xs font-semibold">Select Featured Image</span>
-                </button>
-              )}
-            </CardContent>
-          </Card>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setMediaModalOpen(true)}
+                    className="w-full h-32 border-2 border-dashed border-slate-200 hover:border-orange-400 rounded-lg flex flex-col items-center justify-center gap-1.5 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <ImageIcon className="h-6 w-6" />
+                    <span className="text-xs font-semibold">Select Featured Image</span>
+                  </button>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Built-in SEO Override Engine Card */}
           <Card className="border-slate-200 shadow-sm">

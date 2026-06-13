@@ -17,14 +17,19 @@ interface CategoryPageProps {
 export const revalidate = 0; // Dynamic server rendering
 
 export async function generateMetadata({ params }: CategoryPageProps) {
-  const { slug } = await params;
-  const cat = await categoryService.getCategoryBySlug(slug);
-  if (!cat) return {};
+  try {
+    const { slug } = await params;
+    const cat = await categoryService.getCategoryBySlug(slug);
+    if (!cat) return {};
 
-  return {
-    title: `${cat.name} | AppLuxe Blog`,
-    description: cat.description || `Articles in category ${cat.name}`,
-  };
+    return {
+      title: `${cat.name} | AppLuxe Blog`,
+      description: cat.description || `Articles in category ${cat.name}`,
+    };
+  } catch (e) {
+    console.error('Error generating metadata for category page:', e);
+    return {};
+  }
 }
 
 export default async function CategoryListingPage({ params }: CategoryPageProps) {

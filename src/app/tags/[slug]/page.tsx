@@ -17,14 +17,19 @@ interface TagPageProps {
 export const revalidate = 0; // Dynamic server rendering
 
 export async function generateMetadata({ params }: TagPageProps) {
-  const { slug } = await params;
-  const tag = await tagService.getTagBySlug(slug);
-  if (!tag) return {};
+  try {
+    const { slug } = await params;
+    const tag = await tagService.getTagBySlug(slug);
+    if (!tag) return {};
 
-  return {
-    title: `Articles Tagged #${tag.name} | AppLuxe Blog`,
-    description: tag.description || `Articles tagged with keyword ${tag.name}`,
-  };
+    return {
+      title: `Articles Tagged #${tag.name} | AppLuxe Blog`,
+      description: tag.description || `Articles tagged with keyword ${tag.name}`,
+    };
+  } catch (e) {
+    console.error('Error generating metadata for tag page:', e);
+    return {};
+  }
 }
 
 export default async function TagListingPage({ params }: TagPageProps) {

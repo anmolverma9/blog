@@ -15,17 +15,22 @@ interface KBArticlePageProps {
 export const revalidate = 0; // Dynamic server rendering
 
 export async function generateMetadata({ params }: KBArticlePageProps) {
-  const { slug } = await params;
-  const article = await kbService.getArticleBySlug(slug);
-  if (!article) return {};
+  try {
+    const { slug } = await params;
+    const article = await kbService.getArticleBySlug(slug);
+    if (!article) return {};
 
-  return {
-    title: `${article.title} | Help Center`,
-    description: article.content.slice(0, 160),
-    other: {
-      robots: 'index, follow',
-    }
-  };
+    return {
+      title: `${article.title} | Help Center`,
+      description: article.content.slice(0, 160),
+      other: {
+        robots: 'index, follow',
+      }
+    };
+  } catch (e) {
+    console.error('Error generating metadata for KB article page:', e);
+    return {};
+  }
 }
 
 export default async function KBArticlePage({ params }: KBArticlePageProps) {

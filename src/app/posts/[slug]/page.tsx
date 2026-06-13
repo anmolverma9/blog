@@ -31,38 +31,43 @@ export const revalidate = 0; // Dynamic server rendering
 
 // Generate Dynamic SEO Metadata
 export async function generateMetadata({ params }: PostPageProps) {
-  const { slug } = await params;
-  const post = await postService.getPostBySlug(slug, 'en');
-  if (!post) return {};
+  try {
+    const { slug } = await params;
+    const post = await postService.getPostBySlug(slug, 'en');
+    if (!post) return {};
 
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const seo = post.seo || {};
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const seo = post.seo || {};
 
-  return {
-    title: seo.meta_title || `${post.title} | AppLuxe Blog`,
-    description: seo.meta_description || post.summary || '',
-    keywords: seo.meta_keywords || '',
-    alternates: {
-      canonical: seo.canonical_url || `${siteUrl}/posts/${post.slug}`,
-    },
-    openGraph: {
-      title: seo.og_title || post.title,
-      description: seo.og_description || post.summary || '',
-      url: `${siteUrl}/posts/${post.slug}`,
-      images: [{ url: seo.og_image || post.featured_image_path || '/images/default-blog.jpg' }],
-      type: 'article',
-      publishedTime: post.published_at || undefined,
-    },
-    twitter: {
-      card: seo.twitter_card || 'summary_large_image',
-      title: seo.og_title || post.title,
-      description: seo.og_description || post.summary || '',
-      images: [seo.og_image || post.featured_image_path || '/images/default-blog.jpg'],
-    },
-    other: {
-      robots: seo.robots_settings || 'index, follow',
-    },
-  };
+    return {
+      title: seo.meta_title || `${post.title} | AppLuxe Blog`,
+      description: seo.meta_description || post.summary || '',
+      keywords: seo.meta_keywords || '',
+      alternates: {
+        canonical: seo.canonical_url || `${siteUrl}/posts/${post.slug}`,
+      },
+      openGraph: {
+        title: seo.og_title || post.title,
+        description: seo.og_description || post.summary || '',
+        url: `${siteUrl}/posts/${post.slug}`,
+        images: [{ url: seo.og_image || post.featured_image_path || '/images/default-blog.jpg' }],
+        type: 'article',
+        publishedTime: post.published_at || undefined,
+      },
+      twitter: {
+        card: seo.twitter_card || 'summary_large_image',
+        title: seo.og_title || post.title,
+        description: seo.og_description || post.summary || '',
+        images: [seo.og_image || post.featured_image_path || '/images/default-blog.jpg'],
+      },
+      other: {
+        robots: seo.robots_settings || 'index, follow',
+      },
+    };
+  } catch (e) {
+    console.error('Error generating metadata for post page:', e);
+    return {};
+  }
 }
 
 export default async function SingleBlogPostPage({ params }: PostPageProps) {

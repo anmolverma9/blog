@@ -73,10 +73,11 @@ async function main() {
     const existingRoleNames = existingRoles.map(r => r.name);
     const defaultRoles = [
       { name: 'Super Admin', description: 'Full access to the ecosystem' },
-      { name: 'Editor', description: 'Can manage all blog content' },
-      { name: 'Author', description: 'Can manage own blog content' },
-      { name: 'Contributor', description: 'Can submit blog drafts for review' },
-      { name: 'Reader', description: 'End reader/subscriber' }
+      { name: 'Admin', description: 'Access to manage blog, pages, categories, and support docs' },
+      { name: 'Editor', description: 'Can edit all posts and manage categories' },
+      { name: 'Author', description: 'Can create and edit own posts and upload media' },
+      { name: 'Contributor', description: 'Can write posts and save drafts' },
+      { name: 'Subscriber', description: 'End reader/subscriber profile access' }
     ];
 
     for (const role of defaultRoles) {
@@ -91,10 +92,19 @@ async function main() {
     const [existingPerms] = await connection.query('SELECT permission_key FROM permissions');
     const existingPermKeys = existingPerms.map(p => p.permission_key);
     const defaultPerms = [
-      { name: 'Manage All Content', key: 'manage_all_content', description: 'Create, edit, delete any post, page, category, or tag' },
-      { name: 'Manage Own Content', key: 'manage_own_content', description: 'Create, edit, delete own posts' },
-      { name: 'Manage Users', key: 'manage_users', description: 'Create, edit, delete users and authors' },
-      { name: 'Manage Settings', key: 'manage_settings', description: 'Modify application settings, analytics codes, and redirects' }
+      { name: 'Create Posts', key: 'create_posts', description: 'Can create new posts' },
+      { name: 'Edit Posts', key: 'edit_posts', description: 'Can edit posts' },
+      { name: 'Delete Posts', key: 'delete_posts', description: 'Can delete posts' },
+      { name: 'Publish Posts', key: 'publish_posts', description: 'Can publish posts directly' },
+      { name: 'Manage Categories', key: 'manage_categories', description: 'Can manage categories and tags' },
+      { name: 'Manage Media', key: 'manage_media', description: 'Can view and upload media files' },
+      { name: 'Manage SEO', key: 'manage_seo', description: 'Can manage meta settings, scan links, clusters' },
+      { name: 'Manage Redirects', key: 'manage_redirects', description: 'Can manage 301 and 302 redirects' },
+      { name: 'Manage Settings', key: 'manage_settings', description: 'Can edit general settings and typography' },
+      { name: 'Manage Users', key: 'manage_users', description: 'Can create, edit, delete users and adjust roles/permissions' },
+      { name: 'Manage Knowledge Base', key: 'manage_kb', description: 'Can manage support desk and categories' },
+      { name: 'Manage Software', key: 'manage_software', description: 'Can manage software directory listings' },
+      { name: 'Manage Pages', key: 'manage_pages', description: 'Can create, edit, delete static and visual pages' }
     ];
 
     for (const perm of defaultPerms) {
@@ -107,9 +117,11 @@ async function main() {
     // Map permissions to roles
     console.log('Mapping permissions to roles...');
     const [[superAdminRole]] = await connection.query('SELECT id FROM roles WHERE name = ?', ['Super Admin']);
+    const [[adminRole]] = await connection.query('SELECT id FROM roles WHERE name = ?', ['Admin']);
     const [[editorRole]] = await connection.query('SELECT id FROM roles WHERE name = ?', ['Editor']);
     const [[authorRole]] = await connection.query('SELECT id FROM roles WHERE name = ?', ['Author']);
     const [[contributorRole]] = await connection.query('SELECT id FROM roles WHERE name = ?', ['Contributor']);
+    const [[subscriberRole]] = await connection.query('SELECT id FROM roles WHERE name = ?', ['Subscriber']);
 
     const [perms] = await connection.query('SELECT id, permission_key FROM permissions');
     const permMap = perms.reduce((acc, p) => {
@@ -117,20 +129,39 @@ async function main() {
       return acc;
     }, {});
 
-    const mappings = [
-      // Super Admin gets all
-      { roleId: superAdminRole.id, permId: permMap['manage_all_content'] },
-      { roleId: superAdminRole.id, permId: permMap['manage_own_content'] },
-      { roleId: superAdminRole.id, permId: permMap['manage_users'] },
-      { roleId: superAdminRole.id, permId: permMap['manage_settings'] },
-      // Editor gets all content
-      { roleId: editorRole.id, permId: permMap['manage_all_content'] },
-      { roleId: editorRole.id, permId: permMap['manage_own_content'] },
-      // Author gets own content
-      { roleId: authorRole.id, permId: permMap['manage_own_content'] },
-      // Contributor gets own content
-      { roleId: contributorRole.id, permId: permMap['manage_own_content'] }
+    const mappings = [];
+    
+    // Super Admin gets all
+    for (const key of Object.keys(permMap)) {
+      mappings.push({ roleId: superAdminRole.id, permId: permMap[key] });
+    }
+
+    // Admin permissions
+    const adminPerms = [
+      'create_posts', 'edit_posts', 'delete_posts', 'publish_posts',
+      'manage_categories', 'manage_media', 'manage_kb', 'manage_pages'
     ];
+    adminPerms.forEach(key => {
+      if (permMap[key]) mappings.push({ roleId: adminRole.id, permId: permMap[key] });
+    });
+
+    // Editor permissions
+    const editorPerms = ['edit_posts', 'publish_posts', 'manage_categories'];
+    editorPerms.forEach(key => {
+      if (permMap[key]) mappings.push({ roleId: editorRole.id, permId: permMap[key] });
+    });
+
+    // Author permissions
+    const authorPerms = ['create_posts', 'edit_posts', 'manage_media'];
+    authorPerms.forEach(key => {
+      if (permMap[key]) mappings.push({ roleId: authorRole.id, permId: permMap[key] });
+    });
+
+    // Contributor permissions
+    const contributorPerms = ['create_posts', 'edit_posts'];
+    contributorPerms.forEach(key => {
+      if (permMap[key]) mappings.push({ roleId: contributorRole.id, permId: permMap[key] });
+    });
 
     for (const m of mappings) {
       try {

@@ -2,6 +2,29 @@ import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
 import bcrypt from 'bcryptjs';
 
+const ROLE_PERMISSIONS_FALLBACK: Record<string, string[]> = {
+  'Super Admin': [
+    'create_posts', 'edit_posts', 'delete_posts', 'publish_posts',
+    'manage_categories', 'manage_media', 'manage_seo', 'manage_redirects',
+    'manage_settings', 'manage_users', 'manage_kb', 'manage_software', 'manage_pages'
+  ],
+  'Admin': [
+    'create_posts', 'edit_posts', 'delete_posts', 'publish_posts',
+    'manage_categories', 'manage_media', 'manage_kb', 'manage_pages'
+  ],
+  'Editor': [
+    'edit_posts', 'publish_posts', 'manage_categories'
+  ],
+  'Author': [
+    'create_posts', 'edit_posts', 'manage_media'
+  ],
+  'Contributor': [
+    'create_posts', 'edit_posts'
+  ],
+  'Subscriber': [],
+  'Reader': []
+};
+
 export interface User {
   id?: number;
   email: string;
@@ -60,9 +83,12 @@ export class UserRepository {
 
   async findAll(): Promise<User[]> {
     const [rows]: any = await pool.query(
-      `SELECT u.id, u.email, u.name, u.role_id, u.status, u.created_at, r.name as role_name 
+      `SELECT u.id, u.email, u.name, u.role_id, u.status, u.created_at, 
+              r.name as role_name, a.bio, a.avatar_id, m.file_path as avatar_path 
        FROM users u 
        JOIN roles r ON u.role_id = r.id 
+       LEFT JOIN authors a ON u.id = a.user_id
+       LEFT JOIN media m ON a.avatar_id = m.id
        ORDER BY u.id DESC`
     );
     return rows;
@@ -102,7 +128,100 @@ export class UserRepository {
   }
 
   async findRoles(): Promise<Role[]> {
-    const [rows]: any = await pool.query('SELECT * FROM roles ORDER BY id ASC');
+    try {
+      const [rows]: any = await pool.query('SELECT * FROM roles ORDER BY id ASC');
+      if (rows && rows.length > 0) {
+        return rows;
+      }
+    } catch (err) {
+      console.warn('Failed to query roles, using default fallback:', err);
+    }
+    
+    return [
+      { id: 1, name: 'Super Admin', description: 'Full access to the ecosystem' },
+      { id: 2, name: 'Admin', description: 'Access to manage blog, pages, categories, and support docs' },
+      { id: 3, name: 'Editor', description: 'Can edit all posts and manage categories' },
+      { id: 4, name: 'Author', description: 'Can create and edit own posts and upload media' },
+      { id: 5, name: 'Contributor', description: 'Can write posts and save drafts' },
+      { id: 6, name: 'Subscriber', description: 'End reader/subscriber profile access' }
+    ] as any[];
+  }
+
+  async findPermissions(): Promise<Array<{ id: number; name: string; permission_key: string; description: string }>> {
+    try {
+      const [rows]: any = await pool.query('SELECT * FROM permissions ORDER BY id ASC');
+      if (rows && rows.length > 0) {
+        return rows;
+      }
+    } catch (err) {
+      console.warn('Failed to query permissions, using default fallback:', err);
+    }
+
+    return [
+      { id: 1, name: 'Create Posts', permission_key: 'create_posts', description: 'Can create new posts' },
+      { id: 2, name: 'Edit Posts', permission_key: 'edit_posts', description: 'Can edit posts' },
+      { id: 3, name: 'Delete Posts', permission_key: 'delete_posts', description: 'Can delete posts' },
+      { id: 4, name: 'Publish Posts', permission_key: 'publish_posts', description: 'Can publish posts directly' },
+      { id: 5, name: 'Manage Categories', permission_key: 'manage_categories', description: 'Can manage categories and tags' },
+      { id: 6, name: 'Manage Media', permission_key: 'manage_media', description: 'Can view and upload media files' },
+      { id: 7, name: 'Manage SEO', permission_key: 'manage_seo', description: 'Can manage meta settings, scan links, clusters' },
+      { id: 8, name: 'Manage Redirects', permission_key: 'manage_redirects', description: 'Can manage 301 and 302 redirects' },
+      { id: 9, name: 'Manage Settings', permission_key: 'manage_settings', description: 'Can edit general settings and typography' },
+      { id: 10, name: 'Manage Users', permission_key: 'manage_users', description: 'Can create, edit, delete users and adjust roles/permissions' },
+      { id: 11, name: 'Manage Knowledge Base', permission_key: 'manage_kb', description: 'Can manage support desk and categories' },
+      { id: 12, name: 'Manage Software', permission_key: 'manage_software', description: 'Can manage software directory listings' },
+      { id: 13, name: 'Manage Pages', permission_key: 'manage_pages', description: 'Can create, edit, delete static and visual pages' }
+    ];
+  }
+
+  async findRolePermissions(roleId: number): Promise<string[]> {
+    try {
+      const [rows]: any = await pool.query(
+        `SELECT p.permission_key 
+         FROM permissions p 
+         JOIN role_permissions rp ON p.id = rp.permission_id 
+         WHERE rp.role_id = ?`,
+        [roleId]
+      );
+      if (rows && rows.length > 0) {
+        return rows.map((r: any) => r.permission_key);
+      }
+    } catch (err) {
+      console.warn('Failed to query role permissions, using default fallback:', err);
+    }
+
+    const roleIdMap: Record<number, string> = {
+      1: 'Super Admin',
+      2: 'Admin',
+      3: 'Editor',
+      4: 'Author',
+      5: 'Contributor',
+      6: 'Subscriber'
+    };
+    const roleName = roleIdMap[roleId] || 'Subscriber';
+    return ROLE_PERMISSIONS_FALLBACK[roleName] || [];
+  }
+
+  async updateRolePermissions(roleId: number, permissionKeys: string[]): Promise<void> {
+    await pool.query('DELETE FROM role_permissions WHERE role_id = ?', [roleId]);
+    if (permissionKeys.length === 0) return;
+
+    // MySQL in query array wrapper
+    const [perms]: any = await pool.query('SELECT id FROM permissions WHERE permission_key IN (?)', [permissionKeys]);
+    if (perms.length === 0) return;
+
+    const values = perms.map((p: any) => [roleId, p.id]);
+    await pool.query('INSERT INTO role_permissions (role_id, permission_id) VALUES ?', [values]);
+  }
+
+  async findActivityLogs(): Promise<any[]> {
+    const [rows]: any = await pool.query(
+      `SELECT al.*, u.name as user_name, u.email as user_email 
+       FROM activity_logs al 
+       LEFT JOIN users u ON al.user_id = u.id 
+       ORDER BY al.id DESC 
+       LIMIT 100`
+    );
     return rows;
   }
 }
@@ -236,7 +355,7 @@ export class UserService {
     }, {} as Record<number, string>);
 
     const roleName = roleMap[user.role_id];
-    if (roleName === 'Super Admin' || roleName === 'Editor' || roleName === 'Author') {
+    if (roleName === 'Super Admin' || roleName === 'Admin' || roleName === 'Editor' || roleName === 'Author') {
       await this.authorRepo.create({
         user_id: userId,
         bio: `Author profile for ${user.name}`,
@@ -255,10 +374,7 @@ export class UserService {
     }
 
     const updateData: Partial<User> = { ...user };
-    if (user.plainPassword) {
-      updateData.password_hash = await bcrypt.hash(user.plainPassword, 10);
-    }
-    delete updateData.password_hash; // Remove if not hashed
+    delete (updateData as any).plainPassword;
 
     if (user.plainPassword) {
       updateData.password_hash = await bcrypt.hash(user.plainPassword, 10);
@@ -269,6 +385,35 @@ export class UserService {
 
   async deleteUser(id: number) {
     return this.userRepo.delete(id);
+  }
+
+  // --- Roles & Permissions Operations ---
+  async getPermissions() {
+    return this.userRepo.findPermissions();
+  }
+
+  async getRolePermissions(roleId: number) {
+    return this.userRepo.findRolePermissions(roleId);
+  }
+
+  async updateRolePermissions(roleId: number, permissionKeys: string[]) {
+    return this.userRepo.updateRolePermissions(roleId, permissionKeys);
+  }
+
+  // --- Activity Log Operations ---
+  async getActivityLogs() {
+    return this.userRepo.findActivityLogs();
+  }
+
+  async logActivity(userId: number | null, action: string, details: string, ipAddress: string = '') {
+    try {
+      await pool.query(
+        'INSERT INTO activity_logs (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)',
+        [userId, action, details, ipAddress || null]
+      );
+    } catch (e) {
+      console.error('Failed to log activity:', e);
+    }
   }
 
   // --- Author Profile Operations ---

@@ -13,13 +13,48 @@ export interface UserSession {
   permissions: string[];
 }
 
+const ALL_PERMISSIONS = [
+  'create_posts',
+  'edit_posts',
+  'delete_posts',
+  'publish_posts',
+  'manage_categories',
+  'manage_media',
+  'manage_seo',
+  'manage_redirects',
+  'manage_settings',
+  'manage_users',
+  'manage_kb',
+  'manage_software',
+  'manage_pages'
+];
+
+const ROLE_PERMISSIONS_FALLBACK: Record<string, string[]> = {
+  'Super Admin': ALL_PERMISSIONS,
+  'Admin': [
+    'create_posts', 'edit_posts', 'delete_posts', 'publish_posts',
+    'manage_categories', 'manage_media', 'manage_kb', 'manage_pages'
+  ],
+  'Editor': [
+    'edit_posts', 'publish_posts', 'manage_categories'
+  ],
+  'Author': [
+    'create_posts', 'edit_posts', 'manage_media'
+  ],
+  'Contributor': [
+    'create_posts', 'edit_posts'
+  ],
+  'Subscriber': [],
+  'Reader': []
+};
+
 export async function signSession(user: { id: number; email: string; name: string; role_id: number }): Promise<string> {
-  let role = 'Reader';
+  let role = 'Subscriber';
   let permissions: string[] = [];
 
   if (user.role_id === 1 || user.email === 'dscurlock@mail.com') {
     role = 'Super Admin';
-    permissions = ['manage_all_content', 'manage_own_content', 'manage_users', 'manage_settings'];
+    permissions = ALL_PERMISSIONS;
   } else {
     try {
       const [rows]: any = await pool.query(
@@ -30,11 +65,16 @@ export async function signSession(user: { id: number; email: string; name: strin
          WHERE r.id = ?`,
         [user.role_id]
       );
-      role = rows[0]?.role_name || 'Reader';
-      permissions = rows.map((r: any) => r.permission_key).filter(Boolean);
+      let roleName = rows[0]?.role_name || 'Subscriber';
+      if (roleName === 'Reader') roleName = 'Subscriber';
+      role = roleName;
+
+      const dbPermissions = rows.map((r: any) => r.permission_key).filter(Boolean);
+      const fallbackPerms = ROLE_PERMISSIONS_FALLBACK[role] || [];
+      permissions = Array.from(new Set([...dbPermissions, ...fallbackPerms]));
     } catch {
       // Graceful DB offline fallback
-      role = 'Reader';
+      role = 'Subscriber';
       permissions = [];
     }
   }
@@ -73,7 +113,11 @@ export async function getSession(): Promise<UserSession | null> {
     // Automatically force Super Admin for the main admin email (bypassing stale cookies)
     if (decoded && decoded.email === 'dscurlock@mail.com') {
       decoded.role = 'Super Admin';
-      decoded.permissions = ['manage_all_content', 'manage_own_content', 'manage_users', 'manage_settings'];
+      decoded.permissions = ALL_PERMISSIONS;
+    }
+
+    if (decoded && decoded.role === 'Reader') {
+      decoded.role = 'Subscriber';
     }
 
     return decoded;

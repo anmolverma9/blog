@@ -15,22 +15,27 @@ export const revalidate = 0; // Dynamic server rendering
 
 // Dynamic SEO metadata for pages
 export async function generateMetadata({ params }: StaticPageProps) {
-  const { slug } = await params;
-  const page = await pageService.getPageBySlug(slug, 'en');
-  if (!page) return {};
+  try {
+    const { slug } = await params;
+    const page = await pageService.getPageBySlug(slug, 'en');
+    if (!page) return {};
 
-  const seo = page.seo || {};
-  return {
-    title: seo.meta_title || `${page.title} | AppLuxe`,
-    description: seo.meta_description || page.title,
-    keywords: seo.meta_keywords || '',
-    alternates: {
-      canonical: seo.canonical_url || `/${page.slug}`,
-    },
-    other: {
-      robots: seo.robots_settings || 'index, follow',
-    },
-  };
+    const seo = page.seo || {};
+    return {
+      title: seo.meta_title || `${page.title} | AppLuxe`,
+      description: seo.meta_description || page.title,
+      keywords: seo.meta_keywords || '',
+      alternates: {
+        canonical: seo.canonical_url || `/${page.slug}`,
+      },
+      other: {
+        robots: seo.robots_settings || 'index, follow',
+      },
+    };
+  } catch (e) {
+    console.error('Error in page generateMetadata:', e);
+    return {};
+  }
 }
 
 export default async function StaticPage({ params }: StaticPageProps) {
@@ -45,7 +50,7 @@ export default async function StaticPage({ params }: StaticPageProps) {
   if (page.status === 'draft') {
     const session = await getSession();
     // Only logged in admins/editors can preview drafts
-    if (!session || (session.role !== 'Super Admin' && session.role !== 'Editor')) {
+    if (!session || (session.role !== 'Super Admin' && session.role !== 'Admin' && session.role !== 'Editor')) {
       notFound();
     }
   }

@@ -9,8 +9,8 @@ async function verifyPostAccess(postId: number, session: any) {
     return { status: 404, error: 'Post not found' };
   }
 
-  // If user is Author, check if they own the post
-  if (session.role === 'Author') {
+  // If user is Author or Contributor, check if they own the post
+  if (session.role === 'Author' || session.role === 'Contributor') {
     const author = await userService.getAuthorByUserId(session.id);
     if (!author || post.author_id !== author.id) {
       return { status: 403, error: 'Forbidden: You can only access your own posts' };
@@ -71,9 +71,25 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (slug !== undefined) updateData.slug = slug;
     if (content !== undefined) updateData.content = content;
     if (summary !== undefined) updateData.summary = summary;
-    if (status !== undefined) updateData.status = status;
+    
+    if (status !== undefined) {
+      let finalStatus = status;
+      if (session.role === 'Author' || session.role === 'Contributor') {
+        if (status === 'published' || status === 'approved') {
+          finalStatus = 'pending_review';
+        }
+      }
+      updateData.status = finalStatus;
+    }
+    
     if (category_id !== undefined) updateData.category_id = category_id ? Number(category_id) : null;
-    if (featured_image_id !== undefined) updateData.featured_image_id = featured_image_id ? Number(featured_image_id) : null;
+    
+    if (featured_image_id !== undefined) {
+      updateData.featured_image_id = session.role === 'Contributor' ? null : (featured_image_id ? Number(featured_image_id) : null);
+    } else if (session.role === 'Contributor') {
+      updateData.featured_image_id = null;
+    }
+
     if (body.language_code !== undefined) updateData.language_code = body.language_code;
     if (body.translation_group_id !== undefined) updateData.translation_group_id = body.translation_group_id;
     if (meta !== undefined) updateData.meta = meta;

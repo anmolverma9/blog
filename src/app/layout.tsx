@@ -32,16 +32,24 @@ export async function generateMetadata(): Promise<Metadata> {
   const socialOgImage = settings.social_og_image || '/images/default-blog.jpg';
   const socialTwitterCard = settings.social_twitter_card || 'summary_large_image';
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const metadataBase = new URL(siteUrl);
+
   return {
+    metadataBase,
     title: {
       default: defaultMetaTitle,
       template: `%s | ${siteTitle}`,
     },
     description: defaultMetaDescription,
+    alternates: {
+      canonical: './',
+    },
     openGraph: {
       title: defaultMetaTitle,
       description: defaultMetaDescription,
       images: [{ url: socialOgImage }],
+      url: './',
     },
     twitter: {
       card: socialTwitterCard as any,
@@ -117,6 +125,7 @@ export default async function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         {/* Inject brand color overrides before any content renders — zero flicker */}
@@ -165,7 +174,7 @@ export default async function RootLayout({
           <div dangerouslySetInnerHTML={{ __html: headerScripts }} />
         )}
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {children}
         {/* Custom Footer Scripts */}
         {footerScripts && (

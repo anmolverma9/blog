@@ -15,17 +15,22 @@ interface SoftwarePageProps {
 export const revalidate = 0; // Dynamic server rendering
 
 export async function generateMetadata({ params }: SoftwarePageProps) {
-  const { slug } = await params;
-  const item = await softwareService.getListingBySlug(slug);
-  if (!item) return {};
+  try {
+    const { slug } = await params;
+    const item = await softwareService.getListingBySlug(slug);
+    if (!item) return {};
 
-  return {
-    title: `${item.name} | SaaS Software Directory`,
-    description: item.tagline || item.description.slice(0, 160),
-    other: {
-      robots: 'index, follow',
-    }
-  };
+    return {
+      title: `${item.name} | SaaS Software Directory`,
+      description: item.tagline || item.description.slice(0, 160),
+      other: {
+        robots: 'index, follow',
+      }
+    };
+  } catch (e) {
+    console.error('Error generating metadata for software page:', e);
+    return {};
+  }
 }
 
 export default async function SoftwareProfilePage({ params }: SoftwarePageProps) {

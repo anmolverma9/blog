@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
 
     let authorId: number | undefined = undefined;
 
-    // If role is Author, they can only see/manage their own posts
-    if (session.role === 'Author') {
+    // If role is Author or Contributor, they can only see/manage their own posts
+    if (session.role === 'Author' || session.role === 'Contributor') {
       const author = await userService.getAuthorByUserId(session.id);
       if (!author) {
         return NextResponse.json({ error: 'Author profile not found' }, { status: 403 });
@@ -64,15 +64,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Author profile not found' }, { status: 403 });
     }
 
+    let postStatus = status;
+    if (session.role === 'Author' || session.role === 'Contributor') {
+      if (postStatus === 'published' || postStatus === 'approved') {
+        postStatus = 'pending_review';
+      }
+    }
+
     const newPost = {
       title,
       slug,
       content,
       summary,
-      status,
+      status: postStatus,
       author_id: author.id!,
       category_id: category_id ? Number(category_id) : null,
-      featured_image_id: featured_image_id ? Number(featured_image_id) : null,
+      featured_image_id: session.role === 'Contributor' ? null : (featured_image_id ? Number(featured_image_id) : null),
       language_code: body.language_code || 'en',
       translation_group_id: body.translation_group_id || null,
       meta,

@@ -60,6 +60,10 @@ export async function POST(req: NextRequest) {
       role_id: user.role_id,
     });
 
+    // Log login activity
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    await userService.logActivity(user.id!, 'login', `User logged in successfully`, ip);
+
     return NextResponse.json({
       success: true,
       user: {

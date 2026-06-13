@@ -17,17 +17,22 @@ interface AuthorPageProps {
 export const revalidate = 0; // Dynamic server rendering
 
 export async function generateMetadata({ params }: AuthorPageProps) {
-  const { id } = await params;
-  const authorId = Number(id);
-  if (isNaN(authorId)) return {};
+  try {
+    const { id } = await params;
+    const authorId = Number(id);
+    if (isNaN(authorId)) return {};
 
-  const author = await userService.getAuthor(authorId);
-  if (!author) return {};
+    const author = await userService.getAuthor(authorId);
+    if (!author) return {};
 
-  return {
-    title: `${author.author_name} | AppLuxe Creator`,
-    description: author.bio || `Articles written by ${author.author_name}`,
-  };
+    return {
+      title: `${author.author_name} | AppLuxe Creator`,
+      description: author.bio || `Articles written by ${author.author_name}`,
+    };
+  } catch (e) {
+    console.error('Error generating metadata for author page:', e);
+    return {};
+  }
 }
 
 export default async function AuthorProfilePage({ params }: AuthorPageProps) {

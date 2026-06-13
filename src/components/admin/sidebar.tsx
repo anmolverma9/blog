@@ -15,6 +15,7 @@ import {
   Sparkles,
   Menu,
   UserCircle,
+  Users,
   Type,
   Search,
   HelpCircle,
@@ -29,22 +30,29 @@ interface SidebarProps {
 export default function Sidebar({ session }: SidebarProps) {
   const pathname = usePathname();
 
-  const isSuperAdminOrEditor = session.role === 'Super Admin' || session.role === 'Editor';
+  // Helper to check permissions safely
+  const hasPerm = (perm: string) => {
+    if (session.role === 'Super Admin') return true;
+    return Array.isArray(session.permissions) && session.permissions.includes(perm);
+  };
+
+  const isSubscriber = session.role === 'Subscriber' || session.role === 'Reader';
 
   const menuItems = [
-    { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, show: true },
-    { label: 'Posts', href: '/admin/posts', icon: FileText, show: true },
-    { label: 'Editorial Queue', href: '/admin/editorial', icon: CheckSquare, show: isSuperAdminOrEditor },
-    { label: 'Pages', href: '/admin/pages', icon: Files, show: isSuperAdminOrEditor },
-    { label: 'Categories & Tags', href: '/admin/categories', icon: FolderOpen, show: isSuperAdminOrEditor },
-    { label: 'Media Library', href: '/admin/media', icon: Image, show: true },
-    { label: 'Navigation', href: '/admin/navigation', icon: Menu, show: isSuperAdminOrEditor },
-    { label: 'Knowledge Base', href: '/admin/kb', icon: HelpCircle, show: true },
-    { label: 'Software Directory', href: '/admin/software', icon: Layers, show: isSuperAdminOrEditor },
-    { label: '301 Redirects', href: '/admin/redirects', icon: Shuffle, show: isSuperAdminOrEditor },
-    { label: 'SEO Center', href: '/admin/seo', icon: Search, show: isSuperAdminOrEditor },
-    { label: 'Settings', href: '/admin/settings', icon: Settings, show: isSuperAdminOrEditor },
-    { label: 'Typography', href: '/admin/settings/typography', icon: Type, show: isSuperAdminOrEditor },
+    { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, show: !isSubscriber },
+    { label: 'Posts', href: '/admin/posts', icon: FileText, show: hasPerm('create_posts') || hasPerm('edit_posts') },
+    { label: 'Editorial Queue', href: '/admin/editorial', icon: CheckSquare, show: hasPerm('publish_posts') },
+    { label: 'Pages', href: '/admin/pages', icon: Files, show: hasPerm('manage_pages') },
+    { label: 'Categories & Tags', href: '/admin/categories', icon: FolderOpen, show: hasPerm('manage_categories') },
+    { label: 'Media Library', href: '/admin/media', icon: Image, show: hasPerm('manage_media') },
+    { label: 'Users & Roles', href: '/admin/users', icon: Users, show: hasPerm('manage_users') },
+    { label: 'Navigation', href: '/admin/navigation', icon: Menu, show: hasPerm('manage_pages') },
+    { label: 'Knowledge Base', href: '/admin/kb', icon: HelpCircle, show: hasPerm('manage_kb') },
+    { label: 'Software Directory', href: '/admin/software', icon: Layers, show: hasPerm('manage_software') },
+    { label: '301 Redirects', href: '/admin/redirects', icon: Shuffle, show: hasPerm('manage_redirects') },
+    { label: 'SEO Center', href: '/admin/seo', icon: Search, show: hasPerm('manage_seo') },
+    { label: 'Settings', href: '/admin/settings', icon: Settings, show: hasPerm('manage_settings') },
+    { label: 'Typography', href: '/admin/settings/typography', icon: Type, show: hasPerm('manage_settings') },
     { label: 'My Profile', href: '/admin/profile', icon: UserCircle, show: true },
   ];
 
