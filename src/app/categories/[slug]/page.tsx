@@ -4,6 +4,7 @@ import LayoutWrapper from '@/components/public/layout-wrapper';
 import Sidebar from '@/components/public/sidebar';
 import { postService } from '@/modules/posts';
 import { categoryService } from '@/modules/categories';
+import { settingsService } from '@/modules/settings';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Clock, Eye, FolderOpen } from 'lucide-react';
@@ -22,8 +23,15 @@ export async function generateMetadata({ params }: CategoryPageProps) {
     const cat = await categoryService.getCategoryBySlug(slug);
     if (!cat) return {};
 
+    let siteTitle = 'Blog';
+    try {
+      const settings = await settingsService.getSettings();
+      const siteName = settings.site_name || 'Blog';
+      siteTitle = settings.site_title || (siteName.toLowerCase().endsWith('blog') ? siteName : `${siteName} Blog`);
+    } catch {}
+
     return {
-      title: `${cat.name} | AppLuxe Blog`,
+      title: `${cat.name} | ${siteTitle}`,
       description: cat.description || `Articles in category ${cat.name}`,
     };
   } catch (e) {

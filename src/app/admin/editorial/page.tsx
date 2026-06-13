@@ -2,7 +2,7 @@ import React from 'react';
 import EditorialClient from './editorial-client';
 
 export const metadata = {
-  title: 'Editorial Board Queue — AppLuxe CMS',
+  title: 'Editorial Board Queue',
 };
 
 export default function EditorialAdminPage() {

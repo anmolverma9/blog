@@ -3,8 +3,8 @@
 import PagesListClient from './pages-list-client';
 
 export const metadata = {
-  title: 'Manage Pages | AppLuxe CMS',
-  description: 'Manage AppLuxe static pages and page templates.',
+  title: 'Manage Pages',
+  description: 'Manage static pages and page templates.',
 };
 
 export default function ManagePagesPage() {

@@ -13,10 +13,12 @@ export interface SEOSuggestions {
 export function generateAutoSEOSuggestions(
   title: string,
   content: string,
-  summary: string
+  summary: string,
+  siteName?: string
 ): SEOSuggestions {
   const cleanTitle = title.trim();
-  const blogName = 'AppLuxe Blog';
+  const baseName = siteName || 'Blog';
+  const blogName = baseName.toLowerCase().endsWith('blog') ? baseName : `${baseName} Blog`;
 
   // 1. Meta Title (Max 60 chars recommended)
   let metaTitle = cleanTitle;
@@ -88,7 +90,7 @@ export function generateArticleSchema(post: {
   author_name: string;
   featured_image_url?: string;
   category_name?: string;
-}) {
+}, siteName?: string) {
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   return {
     '@context': 'https://schema.org',
@@ -103,7 +105,7 @@ export function generateArticleSchema(post: {
     },
     'publisher': {
       '@type': 'Organization',
-      'name': 'AppLuxe',
+      'name': siteName || 'Blog',
       'logo': {
         '@type': 'ImageObject',
         'url': `${siteUrl}/logo.png`,

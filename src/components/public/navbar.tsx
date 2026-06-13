@@ -6,13 +6,38 @@ import { useRouter } from 'next/navigation';
 import { Search, Sparkles, Menu, X } from 'lucide-react';
 
 interface NavbarProps {
+  siteName?: string;
   menuItems?: Array<{
     label: string;
     url: string;
   }>;
 }
 
-export default function Navbar({ menuItems = [] }: NavbarProps) {
+export default function Navbar({ siteName = 'Blog', menuItems = [] }: NavbarProps) {
+  const renderLogoText = () => {
+    const trimName = siteName.trim();
+    const lastSpaceIndex = trimName.lastIndexOf(' ');
+    if (lastSpaceIndex !== -1) {
+      const main = trimName.substring(0, lastSpaceIndex);
+      const last = trimName.substring(lastSpaceIndex);
+      return (
+        <>
+          {main}<span className="text-orange-500 font-medium">{last}</span>
+        </>
+      );
+    }
+    if (trimName.toLowerCase().endsWith('blog') && trimName.length > 4) {
+      const main = trimName.substring(0, trimName.length - 4);
+      const last = trimName.substring(trimName.length - 4);
+      return (
+        <>
+          {main}<span className="text-orange-500 font-medium">{last}</span>
+        </>
+      );
+    }
+    return trimName;
+  };
+
   const router = useRouter();
   const displayLinks = menuItems.length > 0 ? menuItems : [
     { label: 'Articles', url: '/posts' },
@@ -38,7 +63,7 @@ export default function Navbar({ menuItems = [] }: NavbarProps) {
             <Sparkles className="h-5 w-5" />
           </div>
           <span className="font-extrabold text-slate-900 tracking-tight text-xl">
-            AppLuxe<span className="text-orange-500 font-medium">Blog</span>
+            {renderLogoText()}
           </span>
         </Link>
 

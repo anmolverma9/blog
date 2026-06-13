@@ -1,12 +1,27 @@
-'use strict';
-
 import LoginClient from './login-client';
+import { settingsService } from '@/modules/settings';
+import { Metadata } from 'next';
 
-export const metadata = {
-  title: 'Admin Login | AppLuxe Blog Platform',
-  description: 'Log in to your AppLuxe SaaS CMS workspace.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  let siteName = 'Blog';
+  try {
+    const settings = await settingsService.getSettings();
+    siteName = settings.site_name || 'Blog';
+  } catch {}
 
-export default function LoginPage() {
-  return <LoginClient />;
+  return {
+    title: `Admin Login | ${siteName} Platform`,
+    description: `Log in to your ${siteName} CMS workspace.`,
+  };
 }
+
+export default async function LoginPage() {
+  let siteName = 'Blog';
+  try {
+    const settings = await settingsService.getSettings();
+    siteName = settings.site_name || 'Blog';
+  } catch {}
+
+  return <LoginClient siteName={siteName} />;
+}
+

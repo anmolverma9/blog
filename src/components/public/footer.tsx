@@ -5,7 +5,11 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Mail, Sparkles, Loader2, Check } from 'lucide-react';
 
-export default function Footer() {
+interface FooterProps {
+  siteName?: string;
+}
+
+export default function Footer({ siteName = 'Blog' }: FooterProps) {
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -51,11 +55,33 @@ export default function Footer() {
                 <Sparkles className="h-4.5 w-4.5" />
               </div>
               <span className="font-extrabold tracking-tight text-lg">
-                AppLuxe<span className="text-orange-500 font-medium">Blog</span>
+                {(() => {
+                  const trimName = siteName.trim();
+                  const lastSpaceIndex = trimName.lastIndexOf(' ');
+                  if (lastSpaceIndex !== -1) {
+                    const main = trimName.substring(0, lastSpaceIndex);
+                    const last = trimName.substring(lastSpaceIndex);
+                    return (
+                      <>
+                        {main}<span className="text-orange-500 font-medium">{last}</span>
+                      </>
+                    );
+                  }
+                  if (trimName.toLowerCase().endsWith('blog') && trimName.length > 4) {
+                    const main = trimName.substring(0, trimName.length - 4);
+                    const last = trimName.substring(trimName.length - 4);
+                    return (
+                      <>
+                        {main}<span className="text-orange-500 font-medium">{last}</span>
+                      </>
+                    );
+                  }
+                  return trimName;
+                })()}
               </span>
             </Link>
             <p className="text-xs leading-relaxed max-w-sm">
-              AppLuxe delivers high-grade SaaS tutorials, editorial blogs, and resources to help builders scale digital operations.
+              {siteName} delivers high-grade SaaS tutorials, editorial blogs, and resources to help builders scale digital operations.
             </p>
           </div>
 
@@ -64,8 +90,6 @@ export default function Footer() {
             <h4 className="text-white font-bold text-sm tracking-wider uppercase">Resources</h4>
             <div className="flex flex-col gap-2.5 text-xs">
               <Link href="/about" className="hover:text-white transition-colors">About Us</Link>
-              <Link href="/kb" className="hover:text-white transition-colors">Help Center (KB)</Link>
-              <Link href="/software" className="hover:text-white transition-colors">Software Directory</Link>
               <Link href="/archives" className="hover:text-white transition-colors">Timeline Archives</Link>
               <Link href="/posts/submit" className="hover:text-white transition-colors">Write For Us (Guest Post)</Link>
             </div>
@@ -116,7 +140,7 @@ export default function Footer() {
 
         {/* Footer bottom */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-          <p>© {new Date().getFullYear()} AppLuxe ecosystem. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {siteName} ecosystem. All rights reserved.</p>
           <div className="flex gap-4">
             <Link href="/admin" className="hover:text-white transition-colors">Admin Workspace</Link>
           </div>

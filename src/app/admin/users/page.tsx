@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import UsersClient from './users-client';
 
 export const metadata = {
-  title: 'Users & Roles | AppLuxe CMS',
+  title: 'Users & Roles',
 };
 
 export default async function AdminUsersPage() {

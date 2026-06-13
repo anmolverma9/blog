@@ -769,7 +769,7 @@ export default function UsersClient({ session }: UsersClientProps) {
                 <textarea
                   value={formBio}
                   onChange={(e) => setFormBio(e.target.value)}
-                  placeholder="Co-founder & Chief Editor of AppLuxe..."
+                  placeholder="Co-founder & Chief Editor of this site..."
                   rows={3}
                   className="w-full border rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-slate-800 resize-none"
                 />
@@ -893,7 +893,7 @@ export default function UsersClient({ session }: UsersClientProps) {
                 <textarea
                   value={formBio}
                   onChange={(e) => setFormBio(e.target.value)}
-                  placeholder="Co-founder & Chief Editor of AppLuxe..."
+                  placeholder="Co-founder & Chief Editor of this site..."
                   rows={3}
                   className="w-full border rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-slate-800 resize-none"
                 />

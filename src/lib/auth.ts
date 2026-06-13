@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import pool from './db';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_jwt_token_for_app_luxe_blog_platform_2026';
-const COOKIE_NAME = 'appluxe_session';
+const COOKIE_NAME = 'cms_session';
 
 export interface UserSession {
   id: number;
@@ -24,8 +24,6 @@ const ALL_PERMISSIONS = [
   'manage_redirects',
   'manage_settings',
   'manage_users',
-  'manage_kb',
-  'manage_software',
   'manage_pages'
 ];
 
@@ -33,7 +31,7 @@ const ROLE_PERMISSIONS_FALLBACK: Record<string, string[]> = {
   'Super Admin': ALL_PERMISSIONS,
   'Admin': [
     'create_posts', 'edit_posts', 'delete_posts', 'publish_posts',
-    'manage_categories', 'manage_media', 'manage_kb', 'manage_pages'
+    'manage_categories', 'manage_media', 'manage_pages'
   ],
   'Editor': [
     'edit_posts', 'publish_posts', 'manage_categories'

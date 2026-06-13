@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession, hasPermission } from '@/lib/auth';
 import pool from '@/lib/db';
+import { settingsService } from '@/modules/settings';
 
 export const maxDuration = 60; // Allow long execution times for link audits
 
@@ -11,6 +12,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Fetch settings for dynamic User-Agent
+    let siteName = 'Blog';
+    try {
+      const settings = await settingsService.getSettings();
+      siteName = settings.site_name || 'Blog';
+    } catch {}
+
     // 1. Fetch published posts and pages
     const [posts]: any = await pool.query('SELECT id, title, slug, content FROM posts WHERE status = "published"');
     const [pages]: any = await pool.query('SELECT id, title, slug, content FROM pages WHERE status = "published"');
@@ -74,13 +82,13 @@ export async function POST(req: NextRequest) {
 
             const res = await fetch(cleanUrl, {
               method: 'HEAD',
-              headers: { 'User-Agent': 'Mozilla/5.0 AppLuxe Link Checker' },
+              headers: { 'User-Agent': `Mozilla/5.0 ${siteName} Link Checker` },
               signal: controller.signal,
             }).catch(() => {
               // Retry with GET if HEAD fails
               return fetch(cleanUrl, {
                 method: 'GET',
-                headers: { 'User-Agent': 'Mozilla/5.0 AppLuxe Link Checker' },
+                headers: { 'User-Agent': `Mozilla/5.0 ${siteName} Link Checker` },
                 signal: controller.signal,
               });
             });

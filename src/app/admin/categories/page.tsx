@@ -3,7 +3,7 @@
 import CategoriesClient from './categories-client';
 
 export const metadata = {
-  title: 'Categories & Tags | AppLuxe CMS',
+  title: 'Categories & Tags',
   description: 'Manage taxonomies, article categories, parent relationships, and tags.',
 };
 

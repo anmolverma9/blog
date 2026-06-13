@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
     console.error('Error fetching settings for metadata:', e);
   }
 
-  const siteTitle = settings.site_title || 'AppLuxe Blog';
+  const siteTitle = settings.site_name || settings.site_title || 'Blog';
   const siteDescription = settings.site_description || 'Next generation SaaS content platform.';
   const defaultMetaTitle = settings.default_meta_title || siteTitle;
   const defaultMetaDescription = settings.default_meta_description || siteDescription;

@@ -5,6 +5,7 @@ import Sidebar from '@/components/public/sidebar';
 import { postService } from '@/modules/posts';
 import { tagService } from '@/modules/tags';
 import { categoryService } from '@/modules/categories';
+import { settingsService } from '@/modules/settings';
 import Link from 'next/link';
 import { BookOpen, Clock, Eye, Tags } from 'lucide-react';
 
@@ -22,8 +23,15 @@ export async function generateMetadata({ params }: TagPageProps) {
     const tag = await tagService.getTagBySlug(slug);
     if (!tag) return {};
 
+    let siteTitle = 'Blog';
+    try {
+      const settings = await settingsService.getSettings();
+      const siteName = settings.site_name || 'Blog';
+      siteTitle = settings.site_title || (siteName.toLowerCase().endsWith('blog') ? siteName : `${siteName} Blog`);
+    } catch {}
+
     return {
-      title: `Articles Tagged #${tag.name} | AppLuxe Blog`,
+      title: `Articles Tagged #${tag.name} | ${siteTitle}`,
       description: tag.description || `Articles tagged with keyword ${tag.name}`,
     };
   } catch (e) {

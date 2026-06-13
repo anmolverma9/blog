@@ -24,11 +24,11 @@ const ROLE_PERMISSIONS_FALLBACK: Record<string, string[]> = {
   'Super Admin': [
     'create_posts', 'edit_posts', 'delete_posts', 'publish_posts',
     'manage_categories', 'manage_media', 'manage_seo', 'manage_redirects',
-    'manage_settings', 'manage_users', 'manage_kb', 'manage_software', 'manage_pages'
+    'manage_settings', 'manage_users', 'manage_pages'
   ],
   'Admin': [
     'create_posts', 'edit_posts', 'delete_posts', 'publish_posts',
-    'manage_categories', 'manage_media', 'manage_kb', 'manage_pages'
+    'manage_categories', 'manage_media', 'manage_pages'
   ],
   'Editor': [
     'edit_posts', 'publish_posts', 'manage_categories'
@@ -65,7 +65,7 @@ export async function proxy(req: NextRequest) {
   }
 
   // 2. Admin Authentication Route Protection
-  const sessionCookie = req.cookies.get('appluxe_session')?.value;
+  const sessionCookie = req.cookies.get('cms_session')?.value;
   const isAdminPath = pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
   const isLoginPage = pathname === '/admin/login';
 
@@ -83,7 +83,7 @@ export async function proxy(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
       const res = NextResponse.redirect(new URL('/admin/login', req.url));
-      res.cookies.delete('appluxe_session');
+      res.cookies.delete('cms_session');
       return res;
     }
 
@@ -110,8 +110,6 @@ export async function proxy(req: NextRequest) {
         { path: '/admin/settings', api: '/api/admin/settings', perm: 'manage_settings' },
         { path: '/admin/seo', api: '/api/admin/seo', perm: 'manage_seo' },
         { path: '/admin/redirects', api: '/api/admin/redirects', perm: 'manage_redirects' },
-        { path: '/admin/software', api: '/api/admin/software', perm: 'manage_software' },
-        { path: '/admin/kb', api: '/api/admin/kb', perm: 'manage_kb' },
         { path: '/admin/pages', api: '/api/admin/pages', perm: 'manage_pages' },
         { path: '/admin/categories', api: '/api/admin/categories', perm: 'manage_categories' },
         { path: '/admin/editorial', api: '/api/admin/editorial', perm: 'publish_posts' },

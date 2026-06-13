@@ -5,6 +5,7 @@ import LayoutWrapper from '@/components/public/layout-wrapper';
 import Sidebar from '@/components/public/sidebar';
 import { postService } from '@/modules/posts';
 import { categoryService } from '@/modules/categories';
+import { settingsService } from '@/modules/settings';
 import { generateArticleSchema, generateFAQSchema, generateReviewSchema, generateBreadcrumbSchema } from '@/lib/seo';
 import { Button, buttonVariants } from '@/components/ui/button';
 import BlocksRenderer from '@/components/public/blocks-renderer';
@@ -39,8 +40,15 @@ export async function generateMetadata({ params }: PostPageProps) {
     const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const seo = post.seo || {};
 
+    let siteTitle = 'Blog';
+    try {
+      const settings = await settingsService.getSettings();
+      const siteName = settings.site_name || 'Blog';
+      siteTitle = settings.site_title || (siteName.toLowerCase().endsWith('blog') ? siteName : `${siteName} Blog`);
+    } catch {}
+
     return {
-      title: seo.meta_title || `${post.title} | AppLuxe Blog`,
+      title: seo.meta_title || `${post.title} | ${siteTitle}`,
       description: seo.meta_description || post.summary || '',
       keywords: seo.meta_keywords || '',
       alternates: {
@@ -72,6 +80,13 @@ export async function generateMetadata({ params }: PostPageProps) {
 
 export default async function SingleBlogPostPage({ params }: PostPageProps) {
   const { slug } = await params;
+  
+  let siteName = 'Blog';
+  try {
+    const settings = await settingsService.getSettings();
+    siteName = settings.site_name || 'Blog';
+  } catch {}
+
   // Fetch post details (increments view count dynamically)
   const post = await postService.getPostBySlug(slug, 'en');
 
@@ -124,10 +139,10 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
     slug: post.slug,
     summary: post.summary || '',
     published_at: post.published_at || new Date().toISOString(),
-    author_name: post.author_name || 'AppLuxe Editor',
+    author_name: post.author_name || `${siteName} Editor`,
     featured_image_url: post.featured_image_path || undefined,
     category_name: post.category_name || undefined,
-  });
+  }, siteName);
 
   const schemas: any[] = [jsonLdSchema];
   if (blocks) {
@@ -150,7 +165,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
           rating: b.data.rating || 5,
           ratingMax: b.data.ratingMax || 5,
           summary: b.data.summary || '',
-          authorName: post.author_name || 'AppLuxe Editor',
+          authorName: post.author_name || `${siteName} Editor`,
           buyUrl: b.data.buyUrl
         }));
       }
@@ -382,7 +397,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
               </div>
 
               {/* Form placeholder */}
-              <form className="space-y-3 pt-3 border-t border-slate-100" onSubmit={(e) => e.preventDefault()}>
+              <div className="space-y-3 pt-3 border-t border-slate-100">
                 <p className="text-xs font-bold text-slate-600">Leave a Reply</p>
                 <textarea
                   placeholder="Write your comment here..."
@@ -392,7 +407,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                 <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold h-8" disabled>
                   Submit Comment (Future Release)
                 </Button>
-              </form>
+              </div>
             </div>
           );
 

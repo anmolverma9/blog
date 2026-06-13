@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Folder, Eye } from 'lucide-react';
+import { settingsService } from '@/modules/settings';
 
 import SidebarNewsletter from './sidebar-newsletter';
 
@@ -10,7 +11,15 @@ interface SidebarProps {
   trendingPosts: Array<{ id?: number; title: string; slug: string; views?: number }>;
 }
 
-export default function Sidebar({ categories, trendingPosts }: SidebarProps) {
+export default async function Sidebar({ categories, trendingPosts }: SidebarProps) {
+  let siteName = 'Blog';
+  try {
+    const settings = await settingsService.getSettings();
+    siteName = settings.site_name || 'Blog';
+  } catch (e) {
+    console.error('Failed to load settings in sidebar:', e);
+  }
+
   return (
     <aside className="space-y-6">
       {/* 1. About / Ecosystem Widget */}
@@ -18,12 +27,12 @@ export default function Sidebar({ categories, trendingPosts }: SidebarProps) {
         <div className="h-2.5 bg-orange-500" />
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-800">
-            About AppLuxe
+            About {siteName}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-xs text-slate-500 leading-relaxed space-y-2.5">
           <p>
-            Welcome to the AppLuxe blog hub! We write about scaling SaaS companies, code architectures, database designs, and marketing automation.
+            Welcome to the {siteName} blog hub! We write about scaling SaaS companies, code architectures, database designs, and marketing automation.
           </p>
           <p className="font-semibold text-slate-700">
             This blog is Phase 1 of a larger modular SaaS ecosystem that includes Helpdesk, Ad Network, and Marketplace.

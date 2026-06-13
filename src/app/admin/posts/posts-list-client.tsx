@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Search, Edit, Trash2, Eye, Loader2, RefreshCw } from 'lucide-react';
+import { PlusCircle, Search, Edit, Trash2, Eye, Loader2, RefreshCw, ExternalLink } from 'lucide-react';
 
 interface PostItem {
   id: number;
@@ -183,7 +183,16 @@ export default function PostsListClient() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1.5">
-                      <Link href={`/admin/posts/${post.id}`} className={buttonVariants({ variant: "ghost", size: "icon", className: "h-8 w-8 text-slate-500 hover:text-orange-500" })}>
+                      <Link
+                        href={`/posts/${post.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={buttonVariants({ variant: "ghost", size: "icon", className: "h-8 w-8 text-slate-500 hover:text-orange-500" })}
+                        title="View Public Post"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Link>
+                      <Link href={`/admin/posts/${post.id}`} className={buttonVariants({ variant: "ghost", size: "icon", className: "h-8 w-8 text-slate-500 hover:text-orange-500" })} title="Edit Post">
                         <Edit className="h-4 w-4" />
                       </Link>
                       <Button
@@ -192,6 +201,7 @@ export default function PostsListClient() {
                         className="h-8 w-8 text-slate-500 hover:text-red-600 hover:bg-red-50"
                         onClick={() => handleDelete(post.id)}
                         disabled={deletingId === post.id}
+                        title="Delete Post"
                       >
                         {deletingId === post.id ? (
                           <Loader2 className="h-4 w-4 animate-spin text-red-500" />

@@ -9,10 +9,12 @@ interface LayoutWrapperProps {
 }
 
 export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
-  // Load dynamic script injections from settings
-  const gaId = await settingsService.getGoogleAnalyticsId();
-  const headerScripts = await settingsService.getHeaderScripts();
-  const footerScripts = await settingsService.getFooterScripts();
+  // Load dynamic settings
+  const settings = await settingsService.getSettings();
+  const siteName = settings.site_name || 'Blog';
+  const gaId = settings.google_analytics_id || '';
+  const headerScripts = settings.header_scripts || '';
+  const footerScripts = settings.footer_scripts || '';
 
   // Load header menu dynamically
   const headerMenu = await menuService.getMenuBySlug('header');
@@ -49,7 +51,7 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
       )}
 
       {/* Navigation Bar */}
-      <Navbar menuItems={menuItems} />
+      <Navbar siteName={siteName} menuItems={menuItems} />
 
       {/* Main Workspace content */}
       <div className="flex-1 bg-slate-50/50 flex flex-col">
@@ -57,7 +59,7 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
       </div>
 
       {/* Footer Banner */}
-      <Footer />
+      <Footer siteName={siteName} />
 
       {/* 2. Footer Scripts Injections */}
       {footerScripts && (

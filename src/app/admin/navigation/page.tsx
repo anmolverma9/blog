@@ -3,7 +3,7 @@
 import NavigationClient from './navigation-client';
 
 export const metadata = {
-  title: 'Navigation Menu | AppLuxe CMS',
+  title: 'Navigation Menu',
   description: 'Manage main navigation links dynamically.',
 };
 

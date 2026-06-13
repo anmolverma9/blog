@@ -8,9 +8,10 @@ import { LogOut, ExternalLink, Menu, Bell, Loader2 } from 'lucide-react';
 
 interface HeaderProps {
   session: UserSession;
+  siteName?: string;
 }
 
-export default function Header({ session }: HeaderProps) {
+export default function Header({ session, siteName = 'System' }: HeaderProps) {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -36,7 +37,7 @@ export default function Header({ session }: HeaderProps) {
         <Button variant="ghost" size="icon" className="md:hidden">
           <Menu className="h-5 w-5 text-slate-600" />
         </Button>
-        <span className="text-slate-400 text-sm hidden md:inline">Workspace / AppLuxe Hub</span>
+        <span className="text-slate-400 text-sm hidden md:inline">Workspace / {siteName} Hub</span>
       </div>
 
       {/* Header Actions */}

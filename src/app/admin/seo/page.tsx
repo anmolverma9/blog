@@ -2,7 +2,7 @@ import React from 'react';
 import SEOClient from './seo-client';
 
 export const metadata = {
-  title: 'SEO Settings — AppLuxe CMS',
+  title: 'SEO Settings',
 };
 
 export default function SEOAdminPage() {

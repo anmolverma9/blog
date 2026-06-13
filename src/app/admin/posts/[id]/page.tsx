@@ -8,7 +8,7 @@ interface EditPostPageProps {
 export async function generateMetadata({ params }: EditPostPageProps) {
   const { id } = await params;
   return {
-    title: `Edit Article #${id} | AppLuxe CMS`,
+    title: `Edit Article #${id}`,
   };
 }
 

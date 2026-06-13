@@ -3,8 +3,8 @@
 import PostEditor from '@/components/admin/post-editor';
 
 export const metadata = {
-  title: 'Create New Article | AppLuxe CMS',
-  description: 'Write and publish a new article to the AppLuxe blog.',
+  title: 'Create New Article',
+  description: 'Write and publish a new article.',
 };
 
 export default function NewPostPage() {

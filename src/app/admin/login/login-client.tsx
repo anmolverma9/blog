@@ -7,7 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Lock, Mail, Loader2, Sparkles } from 'lucide-react';
 
-export default function LoginClient() {
+interface LoginClientProps {
+  siteName?: string;
+}
+
+export default function LoginClient({ siteName = 'System' }: LoginClientProps) {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,7 +56,7 @@ export default function LoginClient() {
           <div className="mx-auto bg-orange-500 text-white p-3 rounded-2xl w-fit shadow-md shadow-orange-500/20 mb-3 flex items-center justify-center">
             <Sparkles className="h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">AppLuxe CMS</CardTitle>
+          <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">{siteName} CMS</CardTitle>
           <CardDescription className="text-slate-500">
             Log in to manage your custom blog & SaaS workspace
           </CardDescription>

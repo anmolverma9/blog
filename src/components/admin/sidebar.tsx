@@ -25,9 +25,10 @@ import {
 
 interface SidebarProps {
   session: UserSession;
+  siteName?: string;
 }
 
-export default function Sidebar({ session }: SidebarProps) {
+export default function Sidebar({ session, siteName = 'System' }: SidebarProps) {
   const pathname = usePathname();
 
   // Helper to check permissions safely
@@ -47,8 +48,6 @@ export default function Sidebar({ session }: SidebarProps) {
     { label: 'Media Library', href: '/admin/media', icon: Image, show: hasPerm('manage_media') },
     { label: 'Users & Roles', href: '/admin/users', icon: Users, show: hasPerm('manage_users') },
     { label: 'Navigation', href: '/admin/navigation', icon: Menu, show: hasPerm('manage_pages') },
-    { label: 'Knowledge Base', href: '/admin/kb', icon: HelpCircle, show: hasPerm('manage_kb') },
-    { label: 'Software Directory', href: '/admin/software', icon: Layers, show: hasPerm('manage_software') },
     { label: '301 Redirects', href: '/admin/redirects', icon: Shuffle, show: hasPerm('manage_redirects') },
     { label: 'SEO Center', href: '/admin/seo', icon: Search, show: hasPerm('manage_seo') },
     { label: 'Settings', href: '/admin/settings', icon: Settings, show: hasPerm('manage_settings') },
@@ -63,7 +62,7 @@ export default function Sidebar({ session }: SidebarProps) {
         <div className="bg-orange-500 text-white p-1.5 rounded-lg">
           <Sparkles className="h-5 w-5" />
         </div>
-        <span className="font-bold text-slate-900 tracking-tight text-lg">AppLuxe CMS</span>
+        <span className="font-bold text-slate-900 tracking-tight text-lg">{siteName} CMS</span>
       </div>
 
       {/* Menu links */}

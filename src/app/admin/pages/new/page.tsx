@@ -3,7 +3,7 @@
 import PageEditor from '@/components/admin/page-editor';
 
 export const metadata = {
-  title: 'Create New Page | AppLuxe CMS',
+  title: 'Create New Page',
   description: 'Design and publish a new static page.',
 };
 

@@ -27,6 +27,7 @@ loadEnv();
 
 const dbConfig = {
   host: process.env.DB_HOST,
+  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
   user: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
@@ -102,8 +103,6 @@ async function main() {
       { name: 'Manage Redirects', key: 'manage_redirects', description: 'Can manage 301 and 302 redirects' },
       { name: 'Manage Settings', key: 'manage_settings', description: 'Can edit general settings and typography' },
       { name: 'Manage Users', key: 'manage_users', description: 'Can create, edit, delete users and adjust roles/permissions' },
-      { name: 'Manage Knowledge Base', key: 'manage_kb', description: 'Can manage support desk and categories' },
-      { name: 'Manage Software', key: 'manage_software', description: 'Can manage software directory listings' },
       { name: 'Manage Pages', key: 'manage_pages', description: 'Can create, edit, delete static and visual pages' }
     ];
 
@@ -139,7 +138,7 @@ async function main() {
     // Admin permissions
     const adminPerms = [
       'create_posts', 'edit_posts', 'delete_posts', 'publish_posts',
-      'manage_categories', 'manage_media', 'manage_kb', 'manage_pages'
+      'manage_categories', 'manage_media', 'manage_pages'
     ];
     adminPerms.forEach(key => {
       if (permMap[key]) mappings.push({ roleId: adminRole.id, permId: permMap[key] });
@@ -189,7 +188,7 @@ async function main() {
       // Create author profile
       await connection.query(
         'INSERT INTO authors (user_id, bio) VALUES (?, ?)',
-        [userId, 'Co-founder & Chief Editor of AppLuxe. Tech enthusiast and SaaS entrepreneur.']
+        [userId, 'Co-founder & Chief Editor of this site. Tech enthusiast and SaaS entrepreneur.']
       );
 
       console.log('====================================================');

@@ -6,11 +6,11 @@ const ROLE_PERMISSIONS_FALLBACK: Record<string, string[]> = {
   'Super Admin': [
     'create_posts', 'edit_posts', 'delete_posts', 'publish_posts',
     'manage_categories', 'manage_media', 'manage_seo', 'manage_redirects',
-    'manage_settings', 'manage_users', 'manage_kb', 'manage_software', 'manage_pages'
+    'manage_settings', 'manage_users', 'manage_pages'
   ],
   'Admin': [
     'create_posts', 'edit_posts', 'delete_posts', 'publish_posts',
-    'manage_categories', 'manage_media', 'manage_kb', 'manage_pages'
+    'manage_categories', 'manage_media', 'manage_pages'
   ],
   'Editor': [
     'edit_posts', 'publish_posts', 'manage_categories'
@@ -168,8 +168,6 @@ export class UserRepository {
       { id: 8, name: 'Manage Redirects', permission_key: 'manage_redirects', description: 'Can manage 301 and 302 redirects' },
       { id: 9, name: 'Manage Settings', permission_key: 'manage_settings', description: 'Can edit general settings and typography' },
       { id: 10, name: 'Manage Users', permission_key: 'manage_users', description: 'Can create, edit, delete users and adjust roles/permissions' },
-      { id: 11, name: 'Manage Knowledge Base', permission_key: 'manage_kb', description: 'Can manage support desk and categories' },
-      { id: 12, name: 'Manage Software', permission_key: 'manage_software', description: 'Can manage software directory listings' },
       { id: 13, name: 'Manage Pages', permission_key: 'manage_pages', description: 'Can create, edit, delete static and visual pages' }
     ];
   }

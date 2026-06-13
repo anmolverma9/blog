@@ -3,7 +3,7 @@
 import SettingsClient from './settings-client';
 
 export const metadata = {
-  title: 'System Settings | AppLuxe CMS',
+  title: 'System Settings',
   description: 'Manage website settings, Google Analytics codes, and custom script injections.',
 };
 

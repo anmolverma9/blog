@@ -4,6 +4,7 @@ import LayoutWrapper from '@/components/public/layout-wrapper';
 import { pageService } from '@/modules/pages';
 import { getSession } from '@/lib/auth';
 import VisualRenderer from '@/components/public/visual-renderer';
+import { settingsService } from '@/modules/settings';
 
 interface StaticPageProps {
   params: Promise<{
@@ -21,8 +22,14 @@ export async function generateMetadata({ params }: StaticPageProps) {
     if (!page) return {};
 
     const seo = page.seo || {};
+    let siteName = 'Blog';
+    try {
+      const settings = await settingsService.getSettings();
+      siteName = settings.site_name || settings.site_title || 'Blog';
+    } catch {}
+
     return {
-      title: seo.meta_title || `${page.title} | AppLuxe`,
+      title: seo.meta_title || `${page.title} | ${siteName}`,
       description: seo.meta_description || page.title,
       keywords: seo.meta_keywords || '',
       alternates: {

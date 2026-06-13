@@ -5,6 +5,7 @@ import Sidebar from '@/components/public/sidebar';
 import { postService } from '@/modules/posts';
 import { userService } from '@/modules/users';
 import { categoryService } from '@/modules/categories';
+import { settingsService } from '@/modules/settings';
 import Link from 'next/link';
 import { BookOpen, Clock, Eye, Globe } from 'lucide-react';
 
@@ -25,8 +26,14 @@ export async function generateMetadata({ params }: AuthorPageProps) {
     const author = await userService.getAuthor(authorId);
     if (!author) return {};
 
+    let siteName = 'Blog';
+    try {
+      const settings = await settingsService.getSettings();
+      siteName = settings.site_name || 'Blog';
+    } catch {}
+
     return {
-      title: `${author.author_name} | AppLuxe Creator`,
+      title: `${author.author_name} | ${siteName} Creator`,
       description: author.bio || `Articles written by ${author.author_name}`,
     };
   } catch (e) {
@@ -41,6 +48,12 @@ export default async function AuthorProfilePage({ params }: AuthorPageProps) {
   if (isNaN(authorId)) {
     notFound();
   }
+
+  let siteName = 'Blog';
+  try {
+    const settings = await settingsService.getSettings();
+    siteName = settings.site_name || 'Blog';
+  } catch {}
 
   const author = await userService.getAuthor(authorId);
   if (!author) {
@@ -73,7 +86,7 @@ export default async function AuthorProfilePage({ params }: AuthorPageProps) {
           <div className="space-y-2 text-center md:text-left flex-1">
             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">Author Profile</span>
             <h1 className="text-2xl font-extrabold text-slate-900 mt-0.5">{author.author_name}</h1>
-            <p className="text-slate-600 text-xs leading-relaxed max-w-2xl">{author.bio || 'AppLuxe editorial contributor.'}</p>
+            <p className="text-slate-600 text-xs leading-relaxed max-w-2xl">{author.bio || `${siteName} contributor.`}</p>
             
             {/* Social links */}
             <div className="flex gap-2 justify-center md:justify-start pt-2 text-slate-400">

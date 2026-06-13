@@ -4,12 +4,20 @@ import LayoutWrapper from '@/components/public/layout-wrapper';
 import { postService } from '@/modules/posts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, Clock, BookOpen, ChevronRight } from 'lucide-react';
+import { settingsService } from '@/modules/settings';
 
 export const revalidate = 0; // Dynamic server rendering
 
 export async function generateMetadata() {
+  let siteTitle = 'Blog';
+  try {
+    const settings = await settingsService.getSettings();
+    const siteName = settings.site_name || 'Blog';
+    siteTitle = settings.site_title || (siteName.toLowerCase().endsWith('blog') ? siteName : `${siteName} Blog`);
+  } catch {}
+
   return {
-    title: 'Content Archives | AppLuxe Blog',
+    title: `Content Archives | ${siteTitle}`,
     description: 'Explore the complete timeline of our tutorials, reviews, and insights.',
     other: {
       robots: 'index, follow',

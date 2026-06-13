@@ -1,6 +1,6 @@
 const mysql = require('mysql2/promise');
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 
 function loadEnv() {
   const envPath = path.join(__dirname, '../.env');
@@ -23,21 +23,23 @@ function loadEnv() {
 loadEnv();
 
 const dbConfig = {
-  host: process.env.DB_HOST || '127.0.0.1',
+  host: process.env.DB_HOST,
   port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
-  user: process.env.DB_USERNAME || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_DATABASE || 'appluxe',
+  user: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
 };
 
 async function main() {
+  const connection = await mysql.createConnection(dbConfig);
   try {
-    const connection = await mysql.createConnection(dbConfig);
-    const [users] = await connection.query('SELECT u.id, u.email, u.name, u.role_id, r.name as role_name FROM users u JOIN roles r ON u.role_id = r.id');
-    console.log(JSON.stringify(users, null, 2));
-    await connection.end();
+    const [rows] = await connection.query('SELECT * FROM settings');
+    console.log('Current settings in database:');
+    console.log(JSON.stringify(rows, null, 2));
   } catch (err) {
-    console.error('Database query error:', err.message);
+    console.error(err);
+  } finally {
+    await connection.end();
   }
 }
 
