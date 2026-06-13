@@ -1,17 +1,14 @@
 import React from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Folder, Eye } from 'lucide-react';
+import { Newspaper, LayoutGrid, Search } from 'lucide-react';
 import { settingsService } from '@/modules/settings';
-
-import SidebarNewsletter from './sidebar-newsletter';
 
 interface SidebarProps {
   categories: Array<{ id?: number; name: string; slug: string }>;
-  trendingPosts: Array<{ id?: number; title: string; slug: string; views?: number }>;
+  recentPosts: Array<{ id?: number; title: string; slug: string; published_at?: string | null }>;
 }
 
-export default async function Sidebar({ categories, trendingPosts }: SidebarProps) {
+export default async function Sidebar({ categories, recentPosts }: SidebarProps) {
   let siteName = 'Blog';
   try {
     const settings = await settingsService.getSettings();
@@ -21,95 +18,90 @@ export default async function Sidebar({ categories, trendingPosts }: SidebarProp
   }
 
   return (
-    <aside className="space-y-6">
-      {/* 1. About / Ecosystem Widget */}
-      <Card className="border-slate-200 shadow-sm bg-white overflow-hidden">
-        <div className="h-2.5 bg-orange-500" />
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-800">
-            About {siteName}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-xs text-slate-500 leading-relaxed space-y-2.5">
-          <p>
-            Welcome to the {siteName} blog hub! We write about scaling SaaS companies, code architectures, database designs, and marketing automation.
-          </p>
-          <p className="font-semibold text-slate-700">
-            This blog is Phase 1 of a larger modular SaaS ecosystem that includes Helpdesk, Ad Network, and Marketplace.
-          </p>
-        </CardContent>
-      </Card>
+    <aside className="space-y-8 sticky top-20">
+      {/* 1. Search Widget */}
+      <div className="space-y-4">
+        {/* Header Badge */}
+        <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-600 text-white text-xs font-black uppercase tracking-wider shadow-sm">
+          <Search className="h-3.5 w-3.5" />
+          Search
+        </div>
+        
+        {/* Search Input & Button Form */}
+        <form action="/search" method="GET" className="flex items-center gap-2">
+          <input
+            name="q"
+            placeholder="Search articles..."
+            className="flex-1 h-10 px-4 rounded-full border border-slate-200 bg-white text-xs focus:outline-none focus:border-orange-500 transition-colors"
+            required
+          />
+          <button
+            type="submit"
+            className="h-10 px-5 rounded-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/10 shrink-0"
+          >
+            Search
+          </button>
+        </form>
+      </div>
 
-      {/* Newsletter Widget */}
-      <Card className="border-slate-200 shadow-sm bg-white">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-800">
-            Newsletter Signup
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 pt-0">
-          <p className="text-slate-500 text-xs leading-relaxed">
-            Get premium articles on SaaS development, SEO tips, and CMS optimizations.
-          </p>
-          <SidebarNewsletter />
-        </CardContent>
-      </Card>
+      {/* 2. Recent Posts Widget */}
+      <div className="space-y-4">
+        {/* Header Badge */}
+        <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-600 text-white text-xs font-black uppercase tracking-wider shadow-sm">
+          <Newspaper className="h-3.5 w-3.5" />
+          Recent Posts
+        </div>
 
-      {/* 2. Trending Posts Widget */}
-      <Card className="border-slate-200 shadow-sm bg-white">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-800">
-            Trending Articles
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {trendingPosts.length === 0 ? (
-            <p className="text-xs text-slate-400 italic">No trending posts yet.</p>
+        {/* List of Recent Posts */}
+        <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-3.5">
+          {recentPosts.length === 0 ? (
+            <p className="text-xs text-slate-400 italic">No recent posts yet.</p>
           ) : (
-            trendingPosts.map((post) => (
-              <div key={post.id ?? post.slug} className="group flex gap-2.5 text-xs">
-                <FileText className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
+            recentPosts.map((post) => (
+              <div key={post.id ?? post.slug} className="flex gap-2.5 items-start text-xs border-b border-slate-50 last:border-0 pb-3 last:pb-0">
+                <Newspaper className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
                 <div className="min-w-0">
                   <Link
                     href={`/posts/${post.slug}`}
-                    className="font-semibold text-slate-700 group-hover:text-orange-500 transition-colors line-clamp-2"
+                    className="font-bold text-slate-800 hover:text-orange-600 transition-colors line-clamp-2 leading-relaxed"
                   >
                     {post.title}
                   </Link>
-                  <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
-                    <Eye className="h-3 w-3" /> {(post.views ?? 0).toLocaleString()} views
-                  </p>
                 </div>
               </div>
             ))
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* 3. Categories Widget */}
-      <Card className="border-slate-200 shadow-sm bg-white">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-800">
-            Categories
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
+      <div className="space-y-4">
+        {/* Header Badge */}
+        <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-600 text-white text-xs font-black uppercase tracking-wider shadow-sm">
+          <LayoutGrid className="h-3.5 w-3.5" />
+          Categories
+        </div>
+
+        {/* List of Categories */}
+        <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-1">
           {categories.length === 0 ? (
             <p className="text-xs text-slate-400 italic">No categories yet.</p>
           ) : (
-            categories.map((cat) => (
-              <Link
-                key={cat.id ?? cat.slug}
-                href={`/posts?category=${cat.slug}`}
-                className="flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-orange-500 transition-colors py-1 border-b border-slate-50 last:border-0"
-              >
-                <Folder className="h-3.5 w-3.5 text-slate-400" />
-                {cat.name}
-              </Link>
-            ))
+            categories
+              .filter(cat => cat.slug !== 'all') // exclude helper category if any
+              .map((cat) => (
+                <Link
+                  key={cat.id ?? cat.slug}
+                  href={`/posts?category=${cat.slug}`}
+                  className="flex items-center gap-2.5 text-xs font-bold text-slate-700 hover:text-orange-600 transition-colors py-2.5 border-b border-slate-50 last:border-0"
+                >
+                  <LayoutGrid className="h-4 w-4 text-slate-400" />
+                  {cat.name}
+                </Link>
+              ))
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </aside>
   );
 }

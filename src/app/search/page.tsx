@@ -91,7 +91,7 @@ export default async function SearchResultsPage({ searchParams }: SearchPageProp
           </div>
 
           <div>
-            <Sidebar categories={categoriesList} trendingPosts={trending} />
+            <Sidebar categories={categoriesList} recentPosts={trending} />
           </div>
         </div>
       </div>

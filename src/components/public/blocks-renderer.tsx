@@ -39,13 +39,13 @@ export default function BlocksRenderer({ blocks }: BlocksRendererProps) {
 
 const RENDERERS: Record<string, (data: any, allBlocks?: Block[]) => React.ReactNode> = {
   paragraph: (data) => (
-    <p className="leading-relaxed text-sm sm:text-base text-slate-700 whitespace-pre-wrap">
+    <p className="leading-normal font-normal text-[20px] text-black tracking-[-0.03em] mb-8 whitespace-pre-wrap">
       {data.text}
     </p>
   ),
 
   h1: (data) => (
-    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mt-8 mb-4">
+    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 mt-8 mb-4">
       {data.text}
     </h1>
   ),

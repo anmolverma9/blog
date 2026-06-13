@@ -2,194 +2,328 @@ import React from 'react';
 import Link from 'next/link';
 import LayoutWrapper from '@/components/public/layout-wrapper';
 import Sidebar from '@/components/public/sidebar';
+import HeroSlider from '@/components/public/hero-slider';
 import { postService } from '@/modules/posts';
 import { categoryService } from '@/modules/categories';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { ArrowRight, BookOpen, Calendar, Eye, Clock, Search } from 'lucide-react';
-import MotionWrapper from '@/components/public/motion-wrapper';
+import { buttonVariants } from '@/components/ui/button';
+import { ArrowUpRight, Calendar, User, Eye, BookOpen, Clock } from 'lucide-react';
 
 export const revalidate = 0; // Dynamic server rendering
 
-export default async function Homepage() {
-  // Fetch data directly from MySQL services
-  const { posts: latest } = await postService.getPosts({
+interface PageProps {
+  searchParams: Promise<{
+    page?: string;
+  }>;
+}
+
+export default async function Homepage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const currentPage = parseInt(params.page || '1', 10);
+  
+  // 1. Fetch Categories
+  const categories = await categoryService.getAllCategories();
+
+  // 2. Fetch Latest Published Posts (up to 50 for in-memory slicing)
+  const { posts: allPosts } = await postService.getPosts({
     status: 'published',
-    limit: 5,
+    limit: 50,
   });
 
+  // 3. Fetch Trending Posts for "You Missed" section
   const { posts: trending } = await postService.getPosts({
     status: 'published',
     orderBy: 'views',
-    limit: 5,
+    limit: 4,
   });
 
-  const categories = await categoryService.getAllCategories();
+  // Slices for Hero Section
+  const sliderPosts = allPosts.slice(0, 5); // Center: 5 posts in slider
+  const leftStackedPosts = allPosts.slice(4, 6); // Left: next 2 posts
+  const rightListPosts = allPosts.slice(0, 4); // Right: list of 4 recent posts
 
-  // Pick first published post as Featured Hero
-  const featuredPost = latest[0] || null;
-  const remainingLatest = latest.slice(1);
+  // Paginated Feed Configuration
+  const feedLimit = 4;
+  const feedOffset = (currentPage - 1) * feedLimit;
+  const feedPosts = allPosts.slice(feedOffset, feedOffset + feedLimit);
+  const totalFeedPosts = allPosts.length;
+  const totalPages = Math.ceil(totalFeedPosts / feedLimit);
+
+  // Sidebar recent posts (top 5 recent)
+  const recentPostsForSidebar = allPosts.slice(0, 5);
 
   return (
     <LayoutWrapper>
-      <div className="editorial-container py-10 md:py-16 space-y-12">
-        {/* Hero Section */}
-        <MotionWrapper direction="up" duration={0.6}>
-          <section className="bg-slate-900 rounded-3xl text-white overflow-hidden relative shadow-xl">
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-600/30 to-slate-900/80 mix-blend-multiply" />
-          {/* Decorative bubble */}
-          <div className="absolute top-[-10%] right-[-10%] w-[350px] h-[350px] rounded-full bg-orange-500 blur-[80px] opacity-20" />
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 space-y-12">
+        
+        {/* ========================================================
+            1. HERO SECTION (3 Columns: Stacked, Slider, Thumbnail List)
+           ======================================================== */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          
+          {/* Column A: Left Stack (2 posts) */}
+          <div className="lg:col-span-3 flex flex-col gap-6 justify-between">
+            {leftStackedPosts.length === 0 ? (
+              <div className="flex-1 min-h-[180px] bg-slate-100 rounded-3xl flex items-center justify-center text-slate-400 text-xs italic">
+                No stories loaded
+              </div>
+            ) : (
+              leftStackedPosts.map((post) => (
+                <div
+                  key={post.id}
+                  className="flex-1 min-h-[188px] relative rounded-3xl overflow-hidden shadow-sm group bg-slate-900 border border-slate-100"
+                >
+                  {/* Background Image */}
+                  {post.featured_image_path ? (
+                    <img
+                      src={post.featured_image_path}
+                      alt={post.title}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-slate-800" />
+                  )}
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
+                  
+                  {/* Text Details */}
+                  <div className="absolute bottom-0 left-0 right-0 p-5 space-y-2 text-white z-10">
+                    {post.category_name && (
+                      <span className="inline-block bg-orange-600 text-[9px] font-extrabold uppercase px-2 py-0.5 rounded">
+                        {post.category_name}
+                      </span>
+                    )}
+                    <h3 className="font-bold text-xs sm:text-sm leading-snug line-clamp-2 hover:underline">
+                      <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+                    </h3>
+                    <div className="flex items-center gap-2 text-[10px] text-slate-300 font-semibold">
+                      <span className="truncate">By {post.author_name}</span>
+                      <span>•</span>
+                      <span>{post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { dateStyle: 'short' }) : ''}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
 
-          <div className="relative z-10 p-8 md:p-16 max-w-2xl space-y-6">
-            <span className="bg-orange-500 text-white font-bold text-xs uppercase tracking-wider px-3 py-1 rounded-full">
-              SaaS Ecosystem Phase 1
-            </span>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
-              Build & Scale Your Digital Presence
-            </h1>
-            <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-              Discover advanced tutorials on clean typescript code architectures, database performance scaling, and modern product marketing.
-            </p>
-            <div className="flex flex-wrap gap-3 pt-2">
-              <Link
-                href="/posts"
-                className={buttonVariants({
-                  className: "bg-orange-500 hover:bg-orange-600 text-white font-bold h-11 px-6 shadow-lg shadow-orange-500/20 flex items-center"
-                })}
-              >
-                Browse Articles <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
+          {/* Column B: Center Slider (5 posts) */}
+          <div className="lg:col-span-6 flex flex-col justify-stretch">
+            <HeroSlider posts={sliderPosts} />
+          </div>
+
+          {/* Column C: Right List (4 posts with thumbnails on right) */}
+          <div className="lg:col-span-3 bg-white border border-slate-100 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
+            <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider border-b border-slate-50 pb-2">
+              Trending Stories
+            </h4>
+            <div className="flex-1 flex flex-col justify-between gap-4">
+              {rightListPosts.length === 0 ? (
+                <p className="text-slate-400 text-xs italic">No items found</p>
+              ) : (
+                rightListPosts.map((post) => (
+                  <div key={post.id} className="flex items-center gap-3 justify-between border-b border-slate-50 last:border-0 pb-3 last:pb-0">
+                    <div className="min-w-0 flex-1 space-y-1">
+                      {post.category_name && (
+                        <span className="text-orange-600 font-extrabold text-[9px] uppercase tracking-wider block">
+                          {post.category_name}
+                        </span>
+                      )}
+                      <h5 className="font-bold text-slate-800 text-[11px] leading-snug line-clamp-2 hover:text-orange-600 transition-colors">
+                        <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+                      </h5>
+                      <span className="text-[9px] text-slate-400 font-semibold block">
+                        {post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
+                      </span>
+                    </div>
+                    {/* Thumbnail */}
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-50 shrink-0 border border-slate-100">
+                      {post.featured_image_path ? (
+                        <img src={post.featured_image_path} alt={post.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                          <BookOpen className="h-5 w-5" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </section>
-      </MotionWrapper>
 
-        {/* Featured Post Card */}
-        {featuredPost && (
-          <MotionWrapper direction="up" delay={0.15} duration={0.6}>
-            <section className="space-y-4">
-              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Featured Story</h2>
-              <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow grid grid-cols-1 md:grid-cols-2">
-                <div className="aspect-video md:aspect-auto relative bg-slate-50 min-h-[250px]">
-                  {featuredPost.featured_image_path ? (
-                    <img
-                      src={featuredPost.featured_image_path}
-                      alt={featuredPost.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-300">
-                      <BookOpen className="h-12 w-12" />
-                    </div>
-                  )}
-                </div>
-                <div className="p-8 flex flex-col justify-between space-y-6">
-                  <div className="space-y-3.5">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
-                      <span className="text-orange-500 font-bold uppercase">{featuredPost.category_name || 'General'}</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {featuredPost.read_time} min read</span>
-                    </div>
-                    <h3 className="text-2xl font-bold text-slate-900 hover:text-orange-500 transition-colors tracking-tight leading-snug">
-                      <Link href={`/posts/${featuredPost.slug}`}>{featuredPost.title}</Link>
-                    </h3>
-                    <p className="text-slate-500 text-sm leading-relaxed line-clamp-3">
-                      {featuredPost.summary || 'Click to read full details...'}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                    <div className="flex items-center gap-2 text-xs text-slate-400">
-                      <span className="font-semibold text-slate-700">By {featuredPost.author_name}</span>
-                      <span>•</span>
-                      <span>{featuredPost.published_at ? new Date(featuredPost.published_at).toLocaleDateString() : ''}</span>
-                    </div>
-                    <Link
-                      href={`/posts/${featuredPost.slug}`}
-                      className={buttonVariants({
-                        variant: "ghost",
-                        size: "sm",
-                        className: "text-orange-500 hover:text-orange-600 font-bold p-0 gap-1 hover:bg-transparent flex items-center"
-                      })}
-                    >
-                      Read Article <ArrowRight className="h-4 w-4" />
+        {/* ========================================================
+            2. MAIN FEED & SIDEBAR SECTION
+           ======================================================== */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          
+          {/* Main Feed (Left) */}
+          <div className="lg:col-span-8 space-y-8">
+            {feedPosts.length === 0 ? (
+              <div className="text-center py-20 text-slate-400 bg-white border border-dashed rounded-3xl">
+                <p className="font-bold text-slate-600">No Publications Found</p>
+                <p className="text-xs mt-1">Please write or import articles in your admin CMS panel.</p>
+              </div>
+            ) : (
+              <div className="space-y-10">
+                {feedPosts.map((post) => (
+                  <article key={post.id} className="group space-y-4">
+                    {/* Featured Image */}
+                    <Link href={`/posts/${post.slug}`} className="block aspect-video w-full rounded-3xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm relative">
+                      {post.featured_image_path ? (
+                        <img
+                          src={post.featured_image_path}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                          <BookOpen className="h-14 w-14" />
+                        </div>
+                      )}
+                      
+                      {/* Floating Category Badge */}
+                      {post.category_name && (
+                        <span className="absolute top-4 left-4 bg-orange-600 text-white font-extrabold text-[9px] uppercase tracking-wider px-3 py-1 rounded shadow-md">
+                          {post.category_name}
+                        </span>
+                      )}
                     </Link>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </MotionWrapper>
-        )}
 
-        {/* Main Grid: Latest Posts (Left) & Sidebar (Right) */}
-        <MotionWrapper direction="up" delay={0.3} duration={0.6}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            {/* Left Column: Latest Feed */}
-            <div className="lg:col-span-2 space-y-8">
-              <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-                <h2 className="text-lg font-bold text-slate-950 tracking-tight flex items-center gap-2">
-                  <BookOpen className="h-4.5 w-4.5 text-orange-500" />
-                  Latest Publications
-                </h2>
-                <Link href="/posts" className="text-xs font-semibold text-orange-500 hover:text-orange-600 transition-colors">
-                  View All Posts
-                </Link>
-              </div>
-
-              {remainingLatest.length === 0 ? (
-                <div className="text-center py-10 text-slate-400 text-xs bg-white rounded-2xl border border-dashed">
-                  No further articles found. Check back later!
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {remainingLatest.map((post) => (
-                    <div key={post.id} className="bg-white border border-slate-100/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row gap-5">
-                      <div className="w-full sm:w-44 aspect-video sm:aspect-square shrink-0 rounded-xl overflow-hidden bg-slate-50 relative">
-                        {post.featured_image_path ? (
-                          <img
-                            src={post.featured_image_path}
-                            alt={post.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-300">
-                            <BookOpen className="h-8 w-8" />
-                          </div>
-                        )}
+                    {/* Meta & Title */}
+                    <div className="space-y-2">
+                      <h2 className="text-2xl font-black text-slate-900 leading-tight tracking-tight hover:text-orange-600 transition-colors">
+                        <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+                      </h2>
+                      
+                      {/* Author & Date Row */}
+                      <div className="flex items-center gap-3.5 text-xs font-semibold text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <User className="h-3.5 w-3.5 text-orange-500" />
+                          By {post.author_name}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3.5 w-3.5 text-orange-500" />
+                          {post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : ''}
+                        </span>
                       </div>
-                      <div className="flex-1 flex flex-col justify-between space-y-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase">
-                            <span className="text-orange-500">{post.category_name || 'General'}</span>
-                            <span>•</span>
-                            <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" /> {post.read_time} min</span>
-                          </div>
-                          <h3 className="font-bold text-slate-900 text-lg hover:text-orange-500 transition-colors tracking-tight">
-                            <Link href={`/posts/${post.slug}`}>{post.title}</Link>
-                          </h3>
-                          <p className="text-slate-500 text-xs leading-relaxed line-clamp-2">
-                            {post.summary || 'Click to view full content...'}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center justify-between border-t border-slate-50 pt-3 text-[11px] text-slate-400">
-                          <span>By {post.author_name}</span>
-                          <span className="flex items-center gap-1">
-                            <Eye className="h-3 w-3" /> {(post.views ?? 0).toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
+                      
+                      {/* Excerpt */}
+                      <p className="text-slate-500 text-sm leading-relaxed line-clamp-3">
+                        {post.summary || 'Click to view the full details of this publication.'}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  </article>
+                ))}
 
-            {/* Right Column: Sidebar */}
-            <div>
-              <Sidebar categories={categories} trendingPosts={trending} />
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 pt-6 border-t border-slate-100">
+                    {Array.from({ length: totalPages }).map((_, idx) => {
+                      const pageNum = idx + 1;
+                      const isActive = pageNum === currentPage;
+                      return (
+                        <Link
+                          key={pageNum}
+                          href={`/?page=${pageNum}`}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-sm ${
+                            isActive
+                              ? 'bg-orange-600 text-white shadow-orange-600/10'
+                              : 'bg-white border border-slate-200 text-slate-600 hover:border-orange-500 hover:text-orange-600'
+                          }`}
+                        >
+                          {pageNum}
+                        </Link>
+                      );
+                    })}
+
+                    {currentPage < totalPages && (
+                      <Link
+                        href={`/?page=${currentPage + 1}`}
+                        className="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold hover:border-orange-500 hover:text-orange-600 transition-all shadow-sm"
+                      >
+                        &gt;
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar (Right) */}
+          <div className="lg:col-span-4">
+            <Sidebar categories={categories} recentPosts={recentPostsForSidebar} />
+          </div>
+        </section>
+
+        {/* ========================================================
+            3. "YOU MISSED" SECTION
+           ======================================================== */}
+        <section className="space-y-6 pt-8 border-t border-slate-100">
+          <div className="flex items-center">
+            <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-600 text-white text-xs font-black uppercase tracking-wider shadow-sm">
+              <ArrowUpRight className="h-3.5 w-3.5" />
+              You Missed
             </div>
           </div>
-        </MotionWrapper>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {trending.length === 0 ? (
+              <div className="col-span-full text-center py-10 text-slate-400 text-xs italic">
+                No items seeded
+              </div>
+            ) : (
+              trending.map((post) => (
+                <div
+                  key={post.id}
+                  className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-[300px] relative group"
+                >
+                  {/* Thumbnail Image */}
+                  <div className="aspect-video w-full overflow-hidden bg-slate-50 shrink-0 relative border-b">
+                    {post.featured_image_path ? (
+                      <img src={post.featured_image_path} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-300">
+                        <BookOpen className="h-8 w-8" />
+                      </div>
+                    )}
+                    
+                    {/* Floating category badge on top-left of image */}
+                    {post.category_name && (
+                      <span className="absolute top-3 left-3 bg-orange-600 text-white font-extrabold text-[8px] uppercase tracking-wider px-2 py-0.5 rounded shadow">
+                        {post.category_name}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <h4 className="font-bold text-[12px] leading-snug text-slate-900 line-clamp-3 hover:text-orange-600 transition-colors">
+                      <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+                    </h4>
+
+                    {/* Bottom Details + Arrow Icon */}
+                    <div className="flex items-center justify-between border-t border-slate-50 pt-2.5">
+                      <span className="text-[10px] text-slate-400 font-semibold">
+                        {post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { dateStyle: 'short' }) : ''}
+                      </span>
+                      <Link
+                        href={`/posts/${post.slug}`}
+                        className="w-7 h-7 rounded-full bg-slate-50 border group-hover:bg-orange-600 group-hover:text-white transition-all flex items-center justify-center text-slate-400"
+                        aria-label="View Post"
+                      >
+                        <ArrowUpRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
       </div>
     </LayoutWrapper>
   );

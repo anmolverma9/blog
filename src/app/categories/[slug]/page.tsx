@@ -122,7 +122,7 @@ export default async function CategoryListingPage({ params }: CategoryPageProps)
           </div>
 
           <div>
-            <Sidebar categories={categoriesList} trendingPosts={trending} />
+            <Sidebar categories={categoriesList} recentPosts={trending} />
           </div>
         </div>
       </div>

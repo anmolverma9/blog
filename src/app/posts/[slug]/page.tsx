@@ -250,7 +250,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                   }
 
                   // Default paragraph rendering
-                  return <p key={idx} className="leading-relaxed whitespace-pre-wrap">{para}</p>;
+                  return <p key={idx} className="leading-normal font-normal text-[20px] text-black tracking-[-0.03em] mb-8 whitespace-pre-wrap">{para}</p>;
                 })}
               </div>
             );
@@ -417,7 +417,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
               <div className="max-w-3xl mx-auto py-10 animate-in fade-in duration-300 space-y-8">
                 <div className="text-center space-y-4">
                   {renderMetaInfo()}
-                  <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight max-w-2xl mx-auto">
+                  <h1 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight max-w-2xl mx-auto">
                     {post.title}
                   </h1>
                   {post.summary && <p className="text-slate-500 text-sm max-w-xl mx-auto">{post.summary}</p>}
@@ -457,7 +457,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-slate-200 pb-10">
                   <div className="lg:col-span-7 space-y-4">
                     {renderMetaInfo()}
-                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-none text-slate-900">
+                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-none text-slate-900">
                       {post.title}
                     </h1>
                     {post.summary && (
@@ -485,7 +485,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                 {/* Body Content */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                   <div className="lg:col-span-2 space-y-8">
-                    <div className="prose prose-slate max-w-none text-slate-700 leading-relaxed text-sm">
+                    <div className="prose prose-slate lg:prose-lg max-w-none text-slate-700 leading-relaxed text-base">
                       {renderContentBody()}
                     </div>
                     {renderSocialSharing()}
@@ -495,7 +495,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                   
                   {/* Sidebar */}
                   <div>
-                    <Sidebar categories={categoriesList} trendingPosts={trending} />
+                    <Sidebar categories={categoriesList} recentPosts={trending} />
                   </div>
                 </div>
               </div>
@@ -516,7 +516,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                   {/* Header info */}
                   <div className="space-y-4">
                     {renderMetaInfo()}
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                    <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
                       {post.title}
                     </h1>
 
@@ -566,7 +566,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                     )}
 
                     {/* Content body (Right) */}
-                    <div className={`${headings.length > 0 ? 'md:col-span-3' : 'md:col-span-4'} prose prose-slate max-w-none text-slate-700 leading-relaxed text-sm`}>
+                    <div className={`${headings.length > 0 ? 'md:col-span-3' : 'md:col-span-4'} prose prose-slate lg:prose-lg max-w-none text-slate-700 leading-relaxed text-base`}>
                       {renderContentBody()}
                     </div>
                   </div>
@@ -584,7 +584,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
 
                 {/* Right Column: Sidebar */}
                 <div>
-                  <Sidebar categories={categoriesList} trendingPosts={trending} />
+                  <Sidebar categories={categoriesList} recentPosts={trending} />
                 </div>
               </div>
             </div>

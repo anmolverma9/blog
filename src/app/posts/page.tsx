@@ -134,7 +134,7 @@ export default async function PublicPostsListingPage({ searchParams }: PostsPage
 
           {/* Sidebar widget */}
           <div>
-            <Sidebar categories={categoriesList} trendingPosts={trending} />
+            <Sidebar categories={categoriesList} recentPosts={trending} />
           </div>
         </div>
       </div>

@@ -48,7 +48,7 @@ export default function VisualRenderer({ data }: VisualRendererProps) {
             style={getSectionStyles(section.settings)}
             className={getSectionClasses(section.settings)}
           >
-            <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-flow-col gap-8 items-start">
+            <div className="max-w-[1440px] mx-auto px-4 grid grid-cols-1 md:grid-flow-col gap-8 items-start">
               {section.columns.map((column) => (
                 <div
                   key={column.id}

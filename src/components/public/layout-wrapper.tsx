@@ -3,6 +3,7 @@ import Navbar from './navbar';
 import Footer from './footer';
 import { settingsService } from '@/modules/settings';
 import { menuService } from '@/modules/menus';
+import { postService } from '@/modules/posts';
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
   // Load dynamic settings
   const settings = await settingsService.getSettings();
   const siteName = settings.site_name || 'Blog';
+  const siteDescription = settings.site_description || 'The latest tech news about the world\'s best...';
   const gaId = settings.google_analytics_id || '';
   const headerScripts = settings.header_scripts || '';
   const footerScripts = settings.footer_scripts || '';
@@ -19,6 +21,17 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
   // Load header menu dynamically
   const headerMenu = await menuService.getMenuBySlug('header');
   const menuItems = headerMenu?.items || [];
+
+  // Fetch latest post for breaking news ticker
+  let breakingNewsTitle = 'Why Social Media Marketing Matters for Modern Business Growth';
+  try {
+    const { posts: latest } = await postService.getPosts({ status: 'published', limit: 1 });
+    if (latest && latest.length > 0) {
+      breakingNewsTitle = latest[0].title;
+    }
+  } catch (err) {
+    console.error('Failed to fetch breaking news:', err);
+  }
 
   return (
     <>
@@ -51,7 +64,7 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
       )}
 
       {/* Navigation Bar */}
-      <Navbar siteName={siteName} menuItems={menuItems} />
+      <Navbar siteName={siteName} siteDescription={siteDescription} menuItems={menuItems} breakingNewsTitle={breakingNewsTitle} />
 
       {/* Main Workspace content */}
       <div className="flex-1 bg-slate-50/50 flex flex-col">
@@ -59,7 +72,7 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
       </div>
 
       {/* Footer Banner */}
-      <Footer siteName={siteName} />
+      <Footer siteName={siteName} siteDescription={siteDescription} />
 
       {/* 2. Footer Scripts Injections */}
       {footerScripts && (
