@@ -23,7 +23,7 @@ export default function PagesListClient() {
   const fetchPages = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/pages');
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/pages');
       if (res.ok) {
         setPages(await res.json());
       }
@@ -45,7 +45,7 @@ export default function PagesListClient() {
 
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/admin/pages/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/pages/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setPages(pages.filter(p => p.id !== id));
       } else {

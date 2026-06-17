@@ -18,7 +18,7 @@ export default function Header({ session, siteName = 'System' }: HeaderProps) {
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
-      const res = await fetch('/api/auth/logout', { method: 'POST' });
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/auth/logout', { method: 'POST' });
       if (res.ok) {
         router.push('/admin/login');
         router.refresh();

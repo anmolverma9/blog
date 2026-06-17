@@ -32,7 +32,7 @@ export default function SettingsClient() {
   useEffect(() => {
     async function loadSettings() {
       try {
-        const res = await fetch('/api/admin/settings');
+        const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/settings');
         if (res.ok) {
           const data = await res.json();
           if (data.site_name) setSiteName(data.site_name);
@@ -79,7 +79,7 @@ export default function SettingsClient() {
     setSavedSuccess(false);
 
     try {
-      const res = await fetch('/api/admin/settings', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

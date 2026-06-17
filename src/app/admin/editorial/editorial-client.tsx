@@ -29,7 +29,7 @@ export default function EditorialClient() {
   // Fetch pending review posts
   const loadPendingPosts = async () => {
     try {
-      const res = await fetch('/api/admin/posts?status=pending_review');
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/posts?status=pending_review');
       if (res.ok) {
         const data = await res.json();
         setPosts(data.posts || []);
@@ -49,7 +49,7 @@ export default function EditorialClient() {
   const handleApprove = async (postId: number) => {
     setProcessing(true);
     try {
-      const res = await fetch(`/api/admin/posts/${postId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/posts/${postId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -80,7 +80,7 @@ export default function EditorialClient() {
 
     setProcessing(true);
     try {
-      const res = await fetch(`/api/admin/posts/${postId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/posts/${postId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

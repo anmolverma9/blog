@@ -78,10 +78,10 @@ export default function NavigationClient() {
     async function loadData() {
       try {
         const [menuRes, pagesRes, catsRes, tagsRes] = await Promise.all([
-          fetch('/api/admin/menus?slug=header'),
-          fetch('/api/admin/pages'),
-          fetch('/api/admin/categories'),
-          fetch('/api/admin/tags')
+          fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/menus?slug=header'),
+          fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/pages'),
+          fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/categories'),
+          fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/tags')
         ]);
 
         if (menuRes.ok) {
@@ -225,7 +225,7 @@ export default function NavigationClient() {
     setSavedSuccess(false);
 
     try {
-      const res = await fetch('/api/admin/menus', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/menus', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

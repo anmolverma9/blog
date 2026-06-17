@@ -143,10 +143,10 @@ export default function PostEditor({ postId }: PostEditorProps) {
     async function loadOptions() {
       try {
         const [catsRes, tagsRes, mediaRes, sessionRes] = await Promise.all([
-          fetch('/api/admin/categories'),
-          fetch('/api/admin/tags'),
-          fetch('/api/admin/media'),
-          fetch('/api/auth/session'),
+          fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/categories'),
+          fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/tags'),
+          fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media'),
+          fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/auth/session'),
         ]);
 
         if (catsRes.ok) setCategories(await catsRes.json());
@@ -169,7 +169,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
 
     async function loadPost() {
       try {
-        const res = await fetch(`/api/admin/posts/${postId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/posts/${postId}`);
         if (!res.ok) throw new Error('Failed to load post');
 
         const post = await res.json();
@@ -271,7 +271,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
     setGeneratingSeo(true);
     try {
       const compiled = compileBlocksToMarkdown(blocks);
-      const res = await fetch('/api/seo/suggest', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/seo/suggest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, content: compiled, summary }),
@@ -303,7 +303,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
     }
     setAnalyzingLinks(true);
     try {
-      const res = await fetch('/api/admin/posts/analyze-linking', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/posts/analyze-linking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ postId, content: compiled }),
@@ -330,7 +330,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
     formData.append('file', file);
 
     try {
-      const res = await fetch('/api/admin/media', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media', {
         method: 'POST',
         body: formData,
       });

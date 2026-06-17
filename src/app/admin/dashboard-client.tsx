@@ -35,7 +35,7 @@ export default function DashboardClient() {
   useEffect(() => {
     async function fetchAnalytics() {
       try {
-        const res = await fetch('/api/admin/analytics');
+        const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/analytics');
         if (!res.ok) {
           throw new Error('Failed to load analytics');
         }

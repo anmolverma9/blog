@@ -447,7 +447,7 @@ function PublicBlogGrid({ count }: { count: number }) {
   useEffect(() => {
     async function loadRecent() {
       try {
-        const res = await fetch(`/api/admin/posts?limit=${count}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/posts?limit=${count}`);
         if (res.ok) {
           const data = await res.json();
           setPosts(data.posts || []);

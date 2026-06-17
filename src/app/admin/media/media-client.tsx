@@ -29,7 +29,7 @@ export default function MediaClient() {
 
   const fetchMedia = async () => {
     try {
-      const res = await fetch('/api/admin/media');
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media');
       if (res.ok) {
         setMedia(await res.json());
       }
@@ -53,7 +53,7 @@ export default function MediaClient() {
     formData.append('file', file);
 
     try {
-      const res = await fetch('/api/admin/media', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media', {
         method: 'POST',
         body: formData,
       });
@@ -83,7 +83,7 @@ export default function MediaClient() {
 
     setUpdatingMeta(true);
     try {
-      const res = await fetch(`/api/admin/media/${selectedItem.id}/metadata`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/media/${selectedItem.id}/metadata`, {
         // Wait, did we create a metadata update endpoint?
         // Let's check: in our API design, we can PUT to /api/admin/media/[id] or handle it directly inside a unified route.
         // Let's see: we can put a PUT route in /api/admin/media/[id] to update metadata!
@@ -115,7 +115,7 @@ export default function MediaClient() {
 
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/media/${selectedItem.id}`, { method: 'DELETE' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/media/${selectedItem.id}`, { method: 'DELETE' });
       if (res.ok) {
         setMedia(media.filter(m => m.id !== selectedItem.id));
         setSelectedItem(null);

@@ -26,7 +26,7 @@ export default function RedirectsClient() {
 
   const fetchRedirects = async () => {
     try {
-      const res = await fetch('/api/admin/redirects');
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/redirects');
       if (res.ok) setRedirects(await res.json());
     } catch (e) {
       console.error(e);
@@ -45,7 +45,7 @@ export default function RedirectsClient() {
 
     setCreating(true);
     try {
-      const res = await fetch('/api/admin/redirects', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/redirects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -74,7 +74,7 @@ export default function RedirectsClient() {
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this redirect rule?')) return;
     try {
-      const res = await fetch(`/api/admin/redirects/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/redirects/${id}`, { method: 'DELETE' });
       if (res.ok) fetchRedirects();
     } catch (err) {
       console.error(err);

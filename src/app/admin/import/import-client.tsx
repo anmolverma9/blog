@@ -31,7 +31,7 @@ export default function ImportClientUI() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch('/api/admin/import/stats');
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/import/stats');
       if (res.ok) {
         const data = await res.json();
         setStats({
@@ -85,7 +85,7 @@ export default function ImportClientUI() {
     setPosts([]);
     try {
       // First, get latest stats so we know imported IDs
-      const statsRes = await fetch('/api/admin/import/stats');
+      const statsRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/import/stats');
       const statsData = await statsRes.json();
       const importedIds = statsData.importedIds || [];
       setStats({ local: statsData.totalLocalPosts, imported: statsData.totalImported, importedIds });
@@ -168,7 +168,7 @@ export default function ImportClientUI() {
         if (resFull.ok) fullPost = await resFull.json();
       }
 
-      const res = await fetch('/api/admin/import/wp-single', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/import/wp-single', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ post: fullPost }),
@@ -202,7 +202,7 @@ export default function ImportClientUI() {
     if (!confirm('Are you sure you want to delete orphaned images from DB and filesystem?')) return;
     setIsCleaning(true);
     try {
-      const res = await fetch('/api/admin/import/clean', { method: 'POST' });
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/import/clean', { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
         alert(`Successfully cleaned ${data.deletedCount} orphaned images.`);

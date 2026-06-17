@@ -45,7 +45,7 @@ export default function CategoriesClient() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/admin/categories');
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/categories');
       if (res.ok) setCategories(await res.json());
     } catch (e) {
       console.error(e);
@@ -56,7 +56,7 @@ export default function CategoriesClient() {
 
   const fetchTags = async () => {
     try {
-      const res = await fetch('/api/admin/tags');
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/tags');
       if (res.ok) setTags(await res.json());
     } catch (e) {
       console.error(e);
@@ -139,7 +139,7 @@ export default function CategoriesClient() {
 
     setCreatingTag(true);
     try {
-      const res = await fetch('/api/admin/tags', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/tags', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -169,7 +169,7 @@ export default function CategoriesClient() {
   const handleDeleteCategory = async (id: number) => {
     if (!confirm('Are you sure you want to delete this category?')) return;
     try {
-      const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/categories/${id}`, { method: 'DELETE' });
       if (res.ok) fetchCategories();
     } catch (err) {
       console.error(err);
@@ -179,7 +179,7 @@ export default function CategoriesClient() {
   const handleDeleteTag = async (id: number) => {
     if (!confirm('Are you sure you want to delete this tag?')) return;
     try {
-      const res = await fetch(`/api/admin/tags/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/tags/${id}`, { method: 'DELETE' });
       if (res.ok) fetchTags();
     } catch (err) {
       console.error(err);

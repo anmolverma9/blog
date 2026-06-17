@@ -31,7 +31,7 @@ export default function SubmitClient() {
   useEffect(() => {
     async function loadCategories() {
       try {
-        const res = await fetch('/api/admin/categories');
+        const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/categories');
         if (res.ok) {
           const data = await res.json();
           setCategories(data);
@@ -54,7 +54,7 @@ export default function SubmitClient() {
     setError('');
 
     try {
-      const res = await fetch('/api/posts/submit', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/posts/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

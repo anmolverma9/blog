@@ -80,7 +80,7 @@ export default function SEOClient() {
   useEffect(() => {
     async function loadSEOData() {
       try {
-        const res = await fetch('/api/admin/seo');
+        const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/seo');
         if (res.ok) {
           const data = await res.json();
           const s = data.settings;
@@ -100,7 +100,7 @@ export default function SEOClient() {
         }
 
         // Load topic clusters
-        const clustersRes = await fetch('/api/admin/seo/topic-clusters');
+        const clustersRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/seo/topic-clusters');
         if (clustersRes.ok) {
           const cData = await clustersRes.json();
           setClusters(cData.clusters || []);
@@ -108,7 +108,7 @@ export default function SEOClient() {
         }
 
         // Load Health Data
-        const healthRes = await fetch('/api/admin/seo/health');
+        const healthRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/seo/health');
         if (healthRes.ok) {
           const hData = await healthRes.json();
           setHealthScore(hData.score);
@@ -131,7 +131,7 @@ export default function SEOClient() {
     setSaveSuccess(false);
 
     try {
-      const res = await fetch('/api/admin/seo', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/seo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -167,7 +167,7 @@ export default function SEOClient() {
   const handleRefreshHealth = async () => {
     setLoadingHealth(true);
     try {
-      const healthRes = await fetch('/api/admin/seo/health');
+      const healthRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/seo/health');
       if (healthRes.ok) {
         const hData = await healthRes.json();
         setHealthScore(hData.score);
@@ -186,7 +186,7 @@ export default function SEOClient() {
     setScanning(true);
     setScanResult(null);
     try {
-      const res = await fetch('/api/admin/seo/scan-links', { method: 'POST' });
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/seo/scan-links', { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
         setScanResult(data);
@@ -204,7 +204,7 @@ export default function SEOClient() {
   const handleClear404Logs = async () => {
     if (!confirm('Are you sure you want to clear all 404 logs?')) return;
     try {
-      const res = await fetch('/api/admin/seo', { method: 'DELETE' });
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/seo', { method: 'DELETE' });
       if (res.ok) {
         setLogs404([]);
       }
@@ -220,7 +220,7 @@ export default function SEOClient() {
 
     try {
       const isEdit = editingClusterId !== null;
-      const res = await fetch('/api/admin/seo/topic-clusters', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/seo/topic-clusters', {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -235,7 +235,7 @@ export default function SEOClient() {
       if (res.ok) {
         alert(isEdit ? 'Cluster updated successfully' : 'Cluster created successfully');
         // Reload clusters
-        const clustersRes = await fetch('/api/admin/seo/topic-clusters');
+        const clustersRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/seo/topic-clusters');
         if (clustersRes.ok) {
           const cData = await clustersRes.json();
           setClusters(cData.clusters || []);
@@ -266,7 +266,7 @@ export default function SEOClient() {
   const handleDeleteCluster = async (id: number) => {
     if (!confirm('Are you sure you want to delete this cluster?')) return;
     try {
-      const res = await fetch(`/api/admin/seo/topic-clusters?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/seo/topic-clusters?id=${id}`, { method: 'DELETE' });
       if (res.ok) {
         setClusters(clusters.filter(c => c.id !== id));
       }

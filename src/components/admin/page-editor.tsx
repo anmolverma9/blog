@@ -95,7 +95,7 @@ export default function PageEditor({ pageId }: PageEditorProps) {
   useEffect(() => {
     async function loadTemplates() {
       try {
-        const res = await fetch('/api/admin/pages/templates');
+        const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/pages/templates');
         if (res.ok) {
           const list = await res.json();
           setTemplates(list);
@@ -116,7 +116,7 @@ export default function PageEditor({ pageId }: PageEditorProps) {
 
     async function loadPage() {
       try {
-        const res = await fetch(`/api/admin/pages/${pageId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/pages/${pageId}`);
         if (!res.ok) throw new Error('Failed to load page');
 
         const page = await res.json();

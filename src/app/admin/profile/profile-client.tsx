@@ -58,7 +58,7 @@ export default function ProfileClient() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/admin/profile');
+        const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/profile');
         if (res.ok) {
           const data = await res.json();
           setProfile({
@@ -90,7 +90,7 @@ export default function ProfileClient() {
     e.preventDefault();
     setProfileSaving(true);
     try {
-      const res = await fetch('/api/admin/profile', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profile),
@@ -121,7 +121,7 @@ export default function ProfileClient() {
     }
     setPwdSaving(true);
     try {
-      const res = await fetch('/api/admin/profile/password', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/profile/password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ current_password: currentPwd, new_password: newPwd, confirm_password: confirmPwd }),

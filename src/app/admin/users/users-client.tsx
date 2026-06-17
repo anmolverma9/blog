@@ -72,14 +72,14 @@ export default function UsersClient({ session }: UsersClientProps) {
     setErrorMsg('');
     try {
       // Fetch users
-      const usersRes = await fetch('/api/admin/users');
+      const usersRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/users');
       if (usersRes.ok) {
         const usersData = await usersRes.json();
         setUsers(usersData);
       }
 
       // Fetch roles matrix
-      const rolesRes = await fetch('/api/admin/users/roles');
+      const rolesRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/users/roles');
       if (rolesRes.ok) {
         const { roles: rolesData, permissions: permsData, matrix: matrixData } = await rolesRes.json();
         setRoles(rolesData);
@@ -88,14 +88,14 @@ export default function UsersClient({ session }: UsersClientProps) {
       }
 
       // Fetch activity logs
-      const logsRes = await fetch('/api/admin/users/activity-logs');
+      const logsRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/users/activity-logs');
       if (logsRes.ok) {
         const logsData = await logsRes.json();
         setActivityLogs(logsData);
       }
 
       // Fetch media for avatar picker
-      const mediaRes = await fetch('/api/admin/media');
+      const mediaRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media');
       if (mediaRes.ok) {
         const mediaData = await mediaRes.json();
         setMedia(mediaData);
@@ -127,7 +127,7 @@ export default function UsersClient({ session }: UsersClientProps) {
     setSaving(true);
     setErrorMsg('');
     try {
-      const res = await fetch('/api/admin/users', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -160,7 +160,7 @@ export default function UsersClient({ session }: UsersClientProps) {
     setSaving(true);
     setErrorMsg('');
     try {
-      const res = await fetch('/api/admin/users', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/users', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -193,7 +193,7 @@ export default function UsersClient({ session }: UsersClientProps) {
     setSaving(true);
     setErrorMsg('');
     try {
-      const res = await fetch('/api/admin/users', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/users', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -221,7 +221,7 @@ export default function UsersClient({ session }: UsersClientProps) {
     }
     setErrorMsg('');
     try {
-      const res = await fetch(`/api/admin/users?id=${userId}`, { method: 'DELETE' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/users?id=${userId}`, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to delete user');
 
@@ -250,7 +250,7 @@ export default function UsersClient({ session }: UsersClientProps) {
     setSaving(true);
     setErrorMsg('');
     try {
-      const res = await fetch('/api/admin/users/roles', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/users/roles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -282,7 +282,7 @@ export default function UsersClient({ session }: UsersClientProps) {
       formData.append('file', file);
       formData.append('alt_text', `Avatar image for ${formName || 'User'}`);
 
-      const res = await fetch('/api/admin/media', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media', {
         method: 'POST',
         body: formData
       });

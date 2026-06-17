@@ -33,7 +33,7 @@ export default function PostsListClient() {
       if (search) params.append('search', search);
       if (status) params.append('status', status);
       
-      const res = await fetch(`/api/admin/posts?${params.toString()}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/posts?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
         setPosts(data.posts || []);
@@ -62,7 +62,7 @@ export default function PostsListClient() {
 
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/admin/posts/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/posts/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setPosts(posts.filter(p => p.id !== id));
         setTotal(prev => prev - 1);

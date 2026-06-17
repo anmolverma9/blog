@@ -220,7 +220,7 @@ export default function BlockEditor({ initialBlocks = [], onChange, postId = 'ne
   useEffect(() => {
     async function fetchMedia() {
       try {
-        const res = await fetch('/api/admin/media');
+        const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media');
         if (res.ok) {
           setMediaLibrary(await res.json());
         }

@@ -35,7 +35,7 @@ export default function TypographyClient() {
   useEffect(() => {
     async function loadSettings() {
       try {
-        const res = await fetch('/api/admin/typography');
+        const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/typography');
         if (res.ok) {
           const data = await res.json();
           setSettings(data);
@@ -114,7 +114,7 @@ export default function TypographyClient() {
     setSaving(true);
     setSavedSuccess(false);
     try {
-      const res = await fetch('/api/admin/typography', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/typography', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),
@@ -159,7 +159,7 @@ export default function TypographyClient() {
     formData.append('file', file);
 
     try {
-      const res = await fetch('/api/admin/typography/upload', {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/typography/upload', {
         method: 'POST',
         body: formData,
       });
