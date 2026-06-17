@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Newspaper, LayoutGrid, Search } from 'lucide-react';
 import { settingsService } from '@/modules/settings';
+import { postService } from '@/modules/posts';
 
 interface SidebarProps {
   categories: Array<{ id?: number; name: string; slug: string }>;
@@ -15,6 +16,20 @@ export default async function Sidebar({ categories, recentPosts }: SidebarProps)
     siteName = settings.site_name || 'Blog';
   } catch (e) {
     console.error('Failed to load settings in sidebar:', e);
+  }
+
+  let randomPostsForSidebar = recentPosts;
+  try {
+    const { posts } = await postService.getPosts({
+      status: 'published',
+      orderBy: 'random',
+      limit: 10,
+    });
+    if (posts.length > 0) {
+      randomPostsForSidebar = posts;
+    }
+  } catch (e) {
+    console.error('Failed to load random posts for sidebar:', e);
   }
 
   return (
@@ -54,10 +69,10 @@ export default async function Sidebar({ categories, recentPosts }: SidebarProps)
 
         {/* List of Recent Posts */}
         <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-3.5">
-          {recentPosts.length === 0 ? (
+          {randomPostsForSidebar.length === 0 ? (
             <p className="text-sm text-slate-400 italic">No recent posts yet.</p>
           ) : (
-            recentPosts.map((post) => (
+            randomPostsForSidebar.map((post) => (
               <div key={post.id ?? post.slug} className="flex gap-2.5 items-start text-sm border-b border-slate-50 last:border-0 pb-3 last:pb-0">
                 <Newspaper className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
                 <div className="min-w-0">

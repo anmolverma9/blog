@@ -48,8 +48,8 @@ export default async function Homepage({ searchParams }: PageProps) {
   // 3. Fetch Trending Posts for "You Missed" section
   const { posts: trending } = await postService.getPosts({
     status: 'published',
-    orderBy: 'views',
-    limit: 4,
+    orderBy: 'random',
+    limit: 10,
   });
 
   // Slices for Hero Section

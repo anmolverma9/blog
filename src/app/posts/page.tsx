@@ -40,8 +40,8 @@ export default async function PublicPostsListingPage({ searchParams }: PostsPage
   // Fetch sidebar data
   const { posts: trending } = await postService.getPosts({
     status: 'published',
-    orderBy: 'views',
-    limit: 5,
+    orderBy: 'random',
+    limit: 10,
   });
   const categoriesList = await categoryService.getAllCategories();
 

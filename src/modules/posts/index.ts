@@ -52,7 +52,7 @@ export interface FetchPostOptions {
   lang?: string;
   limit?: number;
   offset?: number;
-  orderBy?: string; // views, published_at, created_at
+  orderBy?: string; // views, published_at, created_at, random
 }
 
 export class PostRepository {
@@ -170,6 +170,8 @@ export class PostRepository {
       orderBySql = 'ORDER BY p.published_at DESC, p.id DESC';
     } else if (options.orderBy === 'created_at') {
       orderBySql = 'ORDER BY p.created_at DESC, p.id DESC';
+    } else if (options.orderBy === 'random') {
+      orderBySql = 'ORDER BY RAND()';
     }
 
     // Get Total Count

@@ -40,8 +40,8 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
   
   const { posts: trending } = await postService.getPosts({
     status: 'published',
-    orderBy: 'views',
-    limit: 5,
+    orderBy: 'random',
+    limit: 10,
   });
 
   // Table of Contents (TOC) builder: parse H2 headers in markdown
