@@ -27,9 +27,10 @@ import {
 interface SidebarProps {
   session: UserSession;
   siteName?: string;
+  onMobileClose?: () => void;
 }
 
-export default function Sidebar({ session, siteName = 'System' }: SidebarProps) {
+export default function Sidebar({ session, siteName = 'System', onMobileClose }: SidebarProps) {
   const pathname = usePathname();
 
   // Helper to check permissions safely
@@ -85,6 +86,7 @@ export default function Sidebar({ session, siteName = 'System' }: SidebarProps) 
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={onMobileClose}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 ${
                   isActive
                     ? 'bg-orange-50 text-orange-600 shadow-sm border border-orange-100/50'

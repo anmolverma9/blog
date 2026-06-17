@@ -9,9 +9,10 @@ import { LogOut, ExternalLink, Menu, Bell, Loader2 } from 'lucide-react';
 interface HeaderProps {
   session: UserSession;
   siteName?: string;
+  onMobileMenuClick?: () => void;
 }
 
-export default function Header({ session, siteName = 'System' }: HeaderProps) {
+export default function Header({ session, siteName = 'System', onMobileMenuClick }: HeaderProps) {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -34,7 +35,7 @@ export default function Header({ session, siteName = 'System' }: HeaderProps) {
     <header className="h-16 bg-white border-b border-slate-200/80 px-6 md:px-8 flex items-center justify-between z-10">
       {/* Search / Breadcrumbs placeholder */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className="md:hidden" onClick={onMobileMenuClick}>
           <Menu className="h-5 w-5 text-slate-600" />
         </Button>
         <span className="text-slate-400 text-sm hidden md:inline">Workspace / {siteName} Hub</span>
