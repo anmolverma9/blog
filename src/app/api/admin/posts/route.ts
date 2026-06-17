@@ -17,7 +17,8 @@ export async function GET(req: NextRequest) {
     const limit = searchParams.get('limit') ? Number(searchParams.get('limit')) : 20;
     const offset = searchParams.get('offset') ? Number(searchParams.get('offset')) : 0;
 
-    let authorId: number | undefined = undefined;
+    const reqAuthorId = searchParams.get('authorId') ? Number(searchParams.get('authorId')) : undefined;
+    let finalAuthorId: number | undefined = reqAuthorId;
 
     // If role is Author or Contributor, they can only see/manage their own posts
     if (session.role === 'Author' || session.role === 'Contributor') {
@@ -25,14 +26,14 @@ export async function GET(req: NextRequest) {
       if (!author) {
         return NextResponse.json({ error: 'Author profile not found' }, { status: 403 });
       }
-      authorId = author.id;
+      finalAuthorId = author.id;
     }
 
     const { posts, total } = await postService.getPosts({
       search,
       status,
       categoryId,
-      authorId,
+      authorId: finalAuthorId,
       limit,
       offset,
     });
@@ -91,5 +92,45 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error('Admin POST post error:', err.message);
     return NextResponse.json({ error: err.message || 'Failed to create post' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const body = await req.json();
+    const { ids } = body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: 'Array of post IDs is required' }, { status: 400 });
+    }
+
+    let userAuthorId: number | null = null;
+    if (session.role === 'Author' || session.role === 'Contributor') {
+      const author = await userService.getAuthorByUserId(session.id);
+      if (!author) {
+        return NextResponse.json({ error: 'Author profile not found' }, { status: 403 });
+      }
+      userAuthorId = author.id ?? null;
+    }
+
+    for (const id of ids) {
+      if (userAuthorId) {
+        const post = await postService.getPost(id);
+        if (!post || post.author_id !== userAuthorId) {
+          continue; // Skip deleting posts they don't own
+        }
+      }
+      await postService.deletePost(id);
+    }
+
+    return NextResponse.json({ success: true, message: `Deleted ${ids.length} posts` });
+  } catch (err: any) {
+    console.error('Admin bulk DELETE posts error:', err.message);
+    return NextResponse.json({ error: 'Failed to bulk delete posts' }, { status: 500 });
   }
 }

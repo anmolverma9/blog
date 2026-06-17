@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Database, DownloadCloud, AlertTriangle, CheckCircle, Trash2, Search, FileDown } from 'lucide-react';
+import { Loader2, Database, DownloadCloud, AlertTriangle, CheckCircle, Trash2, Search, FileDown, Rocket } from 'lucide-react';
 
 export default function ImportClientUI() {
   const [wpUrl, setWpUrl] = useState('https://appluxe.com');
@@ -198,6 +198,76 @@ export default function ImportClientUI() {
     fetchStats();
   };
 
+  const importEverything = async () => {
+    if (!confirm('This will fetch and import EVERY post from the WordPress site. This may take a long time. Please leave this tab open and do not refresh. Continue?')) return;
+    
+    setIsImporting(true);
+    setImportLogs([]);
+    
+    try {
+      // First, get latest stats so we know imported IDs
+      const statsRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/import/stats');
+      const statsData = await statsRes.json();
+      const importedIds = statsData.importedIds || [];
+      setStats({ local: statsData.totalLocalPosts, imported: statsData.totalImported, importedIds });
+
+      // 1. Get total pages
+      const url = new URL(`${wpUrl}/wp-json/wp/v2/posts`);
+      url.searchParams.set('per_page', '100'); // Fetch 100 at a time to reduce requests
+      url.searchParams.set('lang', 'en');
+      url.searchParams.set('_fields', 'id,title,date'); // Light fetch first
+      
+      if (queryParams) {
+        const params = new URLSearchParams(queryParams);
+        for (const [key, value] of params.entries()) {
+          url.searchParams.set(key, value);
+        }
+      }
+
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      
+      const totalPages = parseInt(res.headers.get('x-wp-totalpages') || '1', 10);
+      const totalWP = parseInt(res.headers.get('x-wp-total') || '0', 10);
+      
+      setProgress({ current: 0, total: totalWP });
+
+      let currentCount = 0;
+
+      // Loop through all pages sequentially (prevents memory leaks and timeouts)
+      for (let pageIdx = 1; pageIdx <= totalPages; pageIdx++) {
+        url.searchParams.set('page', pageIdx.toString());
+        const pRes = await fetch(url.toString());
+        if (!pRes.ok) {
+          console.error(`Failed to fetch page ${pageIdx}`);
+          continue;
+        }
+        
+        const pagePosts = await pRes.json();
+        
+        // Loop through posts on this page sequentially
+        for (let i = 0; i < pagePosts.length; i++) {
+          const post = pagePosts[i];
+          // Check if already imported
+          if (!importedIds.includes(post.id)) {
+            await importSingle(post);
+          } else {
+            setImportLogs(prev => [{ id: post.id, title: post.title.rendered, status: 'skipped', message: 'Already imported' }, ...prev]);
+          }
+          currentCount++;
+          setProgress({ current: currentCount, total: totalWP });
+        }
+      }
+      
+      alert('Full automated import complete!');
+    } catch (err: any) {
+      alert('Failed during full import: ' + err.message);
+    } finally {
+      setIsImporting(false);
+      fetchStats();
+    }
+  };
+
   const cleanOrphaned = async () => {
     if (!confirm('Are you sure you want to delete orphaned images from DB and filesystem?')) return;
     setIsCleaning(true);
@@ -303,7 +373,12 @@ export default function ImportClientUI() {
             </div>
 
             <div className="pt-4 border-t border-slate-100 flex flex-col gap-2">
-              <Button variant="outline" onClick={fetchMissingPosts} disabled={isFetching || isImporting || isScanning} className="w-full border-slate-200">
+              <Button onClick={importEverything} disabled={isFetching || isImporting || isScanning} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md shadow-emerald-500/20">
+                {isImporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Rocket className="h-4 w-4 mr-2" />}
+                Import EVERYTHING (1-Click)
+              </Button>
+
+              <Button variant="outline" onClick={fetchMissingPosts} disabled={isFetching || isImporting || isScanning} className="w-full border-slate-200 mt-2">
                 {isScanning ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2 text-blue-500" />}
                 Scan for Missing Posts
               </Button>

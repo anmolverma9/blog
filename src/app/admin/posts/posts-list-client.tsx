@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Search, Edit, Trash2, Eye, Loader2, RefreshCw, ExternalLink } from 'lucide-react';
+import { PlusCircle, Search, Edit, Trash2, Eye, Loader2, RefreshCw, ExternalLink, CheckSquare } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface PostItem {
   id: number;
@@ -26,12 +27,37 @@ export default function PostsListClient() {
   const [status, setStatus] = useState('');
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  // New states for Advanced Filters & Bulk Delete
+  const [categories, setCategories] = useState<any[]>([]);
+  const [authors, setAuthors] = useState<any[]>([]);
+  const [categoryId, setCategoryId] = useState('');
+  const [authorId, setAuthorId] = useState('');
+  const [selectedPostIds, setSelectedPostIds] = useState<number[]>([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  useEffect(() => {
+    async function loadFilters() {
+      try {
+        const catRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/categories');
+        if (catRes.ok) setCategories(await catRes.json());
+
+        const userRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/users');
+        if (userRes.ok) setAuthors(await userRes.json());
+      } catch (err) {
+        console.error('Failed to load filters', err);
+      }
+    }
+    loadFilters();
+  }, []);
+
   const fetchPosts = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (status) params.append('status', status);
+      if (categoryId) params.append('categoryId', categoryId);
+      if (authorId) params.append('authorId', authorId);
       
       const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/posts?${params.toString()}`);
       if (res.ok) {
@@ -48,7 +74,8 @@ export default function PostsListClient() {
 
   useEffect(() => {
     fetchPosts();
-  }, [status]); // Fetch when status changes, search is handled on submit/debounce
+    setSelectedPostIds([]); // Reset selection when filter changes
+  }, [status, categoryId, authorId]); // Fetch when filters change, search is handled on submit/debounce
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +101,50 @@ export default function PostsListClient() {
       console.error('Error deleting post:', err);
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedPostIds(posts.map(p => p.id));
+    } else {
+      setSelectedPostIds([]);
+    }
+  };
+
+  const handleSelectOne = (id: number, checked: boolean) => {
+    if (checked) {
+      setSelectedPostIds(prev => [...prev, id]);
+    } else {
+      setSelectedPostIds(prev => prev.filter(pId => pId !== id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedPostIds.length === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selectedPostIds.length} posts? This action cannot be undone.`)) {
+      return;
+    }
+
+    setBulkDeleting(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/posts`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedPostIds })
+      });
+      if (res.ok) {
+        setPosts(posts.filter(p => !selectedPostIds.includes(p.id)));
+        setTotal(prev => prev - selectedPostIds.length);
+        setSelectedPostIds([]);
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to bulk delete posts');
+      }
+    } catch (err) {
+      console.error('Error bulk deleting posts:', err);
+    } finally {
+      setBulkDeleting(false);
     }
   };
 
@@ -106,7 +177,31 @@ export default function PostsListClient() {
           <Button type="submit" className="bg-slate-900 hover:bg-slate-800 text-white h-10">Search</Button>
         </form>
 
-        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+          {authors.length > 0 && (
+            <select
+              value={authorId}
+              onChange={(e) => setAuthorId(e.target.value)}
+              className="h-10 px-3 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+            >
+              <option value="">All Authors</option>
+              {authors.map((a: any) => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+          )}
+
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="h-10 px-3 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+          >
+            <option value="">All Categories</option>
+            {categories.map((c: any) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
@@ -137,10 +232,34 @@ export default function PostsListClient() {
             <p className="text-sm mt-1">Try resetting filters or write your first post!</p>
           </div>
         ) : (
-          <Table>
-            <TableHeader className="bg-slate-50/70 border-b border-slate-100">
-              <TableRow>
-                <TableHead className="font-bold text-slate-700">Title</TableHead>
+          <div>
+            {selectedPostIds.length > 0 && (
+              <div className="bg-red-50 border-b border-red-100 p-3 flex items-center justify-between animate-in slide-in-from-top-2">
+                <span className="text-sm font-semibold text-red-700 flex items-center gap-2">
+                  <CheckSquare className="h-4 w-4" /> {selectedPostIds.length} posts selected
+                </span>
+                <Button 
+                  onClick={handleBulkDelete} 
+                  disabled={bulkDeleting}
+                  variant="destructive" 
+                  size="sm" 
+                  className="h-8 shadow-sm flex items-center gap-1.5"
+                >
+                  {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                  Delete Selected
+                </Button>
+              </div>
+            )}
+            <Table>
+              <TableHeader className="bg-slate-50/70 border-b border-slate-100">
+                <TableRow>
+                  <TableHead className="w-[50px] text-center">
+                    <Checkbox 
+                      checked={posts.length > 0 && selectedPostIds.length === posts.length} 
+                      onCheckedChange={(checked) => handleSelectAll(!!checked)} 
+                    />
+                  </TableHead>
+                  <TableHead className="font-bold text-slate-700">Title</TableHead>
                 <TableHead className="font-bold text-slate-700">Author</TableHead>
                 <TableHead className="font-bold text-slate-700">Category</TableHead>
                 <TableHead className="font-bold text-slate-700">Status</TableHead>
@@ -152,6 +271,12 @@ export default function PostsListClient() {
             <TableBody>
               {posts.map((post) => (
                 <TableRow key={post.id} className="hover:bg-slate-50/50">
+                  <TableCell className="w-[50px] text-center">
+                    <Checkbox 
+                      checked={selectedPostIds.includes(post.id)}
+                      onCheckedChange={(checked) => handleSelectOne(post.id, !!checked)}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium text-slate-900 max-w-xs truncate">
                     {post.title}
                   </TableCell>
@@ -215,6 +340,7 @@ export default function PostsListClient() {
               ))}
             </TableBody>
           </Table>
+        </div>
         )}
       </div>
     </div>
