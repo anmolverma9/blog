@@ -19,6 +19,28 @@ export interface Block {
   data: any;
 }
 
+// Pure CSS Auto-Resizing Textarea wrapper
+const CssAutoResizeTextarea = ({ value, onChange, className = '', placeholder, ...props }: any) => {
+  return (
+    <div className="grid w-full">
+      {/* Invisible clone dictates height via CSS Grid */}
+      <div
+        className={`col-start-1 col-end-2 row-start-1 row-end-2 invisible whitespace-pre-wrap break-words px-1 py-1 text-sm leading-normal ${className}`}
+        aria-hidden="true"
+      >
+        {value + ' '}
+      </div>
+      {/* Actual textarea matching the clone's height */}
+      <textarea
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        {...props}
+        className={`col-start-1 col-end-2 row-start-1 row-end-2 w-full h-full resize-none overflow-hidden bg-transparent outline-none border-0 px-1 py-1 text-slate-800 text-sm leading-normal ${className}`}
+      />
+    </div>
+  );
+};
 interface BlockEditorProps {
   initialBlocks: Block[];
   onChange: (blocks: Block[]) => void;
@@ -827,7 +849,7 @@ function getDefaultData(type: Block['type']) {
 }
 
 // Intercept HTML pastes from clipboard and translate formatting into Block structures
-function parseHtmlToBlocks(html: string): Block[] {
+export function parseHtmlToBlocks(html: string): Block[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   const blocks: Block[] = [];
@@ -928,14 +950,14 @@ function renderBlockInput(
   switch (block.type) {
     case 'paragraph':
       return (
-        <Textarea
+        <CssAutoResizeTextarea
           placeholder="Start writing a paragraph... (type '/' for block commands)"
           value={data.text || ''}
-          onChange={(e) => onChange({ text: e.target.value })}
+          onChange={(e: any) => onChange({ text: e.target.value })}
           onKeyDown={helpers.onKeyDown}
           onPaste={helpers.onPaste}
           onFocus={helpers.onFocus}
-          className="border-0 focus-visible:ring-0 px-1 py-1 min-h-[50px] shadow-none outline-none resize-y text-slate-800 leading-relaxed text-sm bg-transparent"
+          className="focus-visible:ring-0 shadow-none min-h-[50px]"
         />
       );
 

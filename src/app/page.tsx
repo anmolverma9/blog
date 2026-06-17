@@ -63,7 +63,7 @@ export default async function Homepage({ searchParams }: PageProps) {
           {/* Column A: Left Stack (2 posts) */}
           <div className="lg:col-span-3 flex flex-col gap-6 justify-between">
             {leftStackedPosts.length === 0 ? (
-              <div className="flex-1 min-h-[180px] bg-slate-100 rounded-3xl flex items-center justify-center text-slate-400 text-xs italic">
+              <div className="flex-1 min-h-[180px] bg-slate-100 rounded-3xl flex items-center justify-center text-slate-400 text-sm italic">
                 No stories loaded
               </div>
             ) : (
@@ -88,14 +88,14 @@ export default async function Homepage({ searchParams }: PageProps) {
                   {/* Text Details */}
                   <div className="absolute bottom-0 left-0 right-0 p-5 space-y-2 text-white z-10">
                     {post.category_name && (
-                      <span className="inline-block bg-orange-600 text-[9px] font-extrabold uppercase px-2 py-0.5 rounded">
+                      <span className="inline-block bg-orange-600 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded">
                         {post.category_name}
                       </span>
                     )}
-                    <h3 className="font-bold text-xs sm:text-sm leading-snug line-clamp-2 hover:underline">
+                    <h3 className="font-bold text-sm sm:text-base leading-snug line-clamp-2 hover:underline">
                       <Link href={`/posts/${post.slug}`}>{post.title}</Link>
                     </h3>
-                    <div className="flex items-center gap-2 text-[10px] text-slate-300 font-semibold">
+                    <div className="flex items-center gap-2 text-xs text-slate-300 font-semibold">
                       <span className="truncate">By {post.author_name}</span>
                       <span>•</span>
                       <span>{post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { dateStyle: 'short' }) : ''}</span>
@@ -113,25 +113,25 @@ export default async function Homepage({ searchParams }: PageProps) {
 
           {/* Column C: Right List (4 posts with thumbnails on right) */}
           <div className="lg:col-span-3 bg-white border border-slate-100 rounded-3xl p-5 shadow-sm flex flex-col justify-between gap-4">
-            <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider border-b border-slate-50 pb-2">
+            <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider border-b border-slate-50 pb-2">
               Trending Stories
             </h4>
             <div className="flex-1 flex flex-col justify-between gap-4">
               {rightListPosts.length === 0 ? (
-                <p className="text-slate-400 text-xs italic">No items found</p>
+                <p className="text-slate-400 text-sm italic">No items found</p>
               ) : (
                 rightListPosts.map((post) => (
                   <div key={post.id} className="flex items-center gap-3 justify-between border-b border-slate-50 last:border-0 pb-3 last:pb-0">
                     <div className="min-w-0 flex-1 space-y-1">
                       {post.category_name && (
-                        <span className="text-orange-600 font-extrabold text-[9px] uppercase tracking-wider block">
+                        <span className="text-orange-600 font-extrabold text-[10px] uppercase tracking-wider block">
                           {post.category_name}
                         </span>
                       )}
-                      <h5 className="font-bold text-slate-800 text-[11px] leading-snug line-clamp-2 hover:text-orange-600 transition-colors">
+                      <h5 className="font-bold text-slate-800 text-xs leading-snug line-clamp-2 hover:text-orange-600 transition-colors">
                         <Link href={`/posts/${post.slug}`}>{post.title}</Link>
                       </h5>
-                      <span className="text-[9px] text-slate-400 font-semibold block">
+                      <span className="text-[10px] text-slate-400 font-semibold block">
                         {post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
                       </span>
                     </div>
@@ -162,7 +162,7 @@ export default async function Homepage({ searchParams }: PageProps) {
             {feedPosts.length === 0 ? (
               <div className="text-center py-20 text-slate-400 bg-white border border-dashed rounded-3xl">
                 <p className="font-bold text-slate-600">No Publications Found</p>
-                <p className="text-xs mt-1">Please write or import articles in your admin CMS panel.</p>
+                <p className="text-sm mt-1">Please write or import articles in your admin CMS panel.</p>
               </div>
             ) : (
               <div className="space-y-10">
@@ -184,7 +184,7 @@ export default async function Homepage({ searchParams }: PageProps) {
                       
                       {/* Floating Category Badge */}
                       {post.category_name && (
-                        <span className="absolute top-4 left-4 bg-orange-600 text-white font-extrabold text-[9px] uppercase tracking-wider px-3 py-1 rounded shadow-md">
+                        <span className="absolute top-4 left-4 bg-orange-600 text-white font-extrabold text-[10px] uppercase tracking-wider px-3 py-1 rounded shadow-md">
                           {post.category_name}
                         </span>
                       )}
@@ -197,7 +197,7 @@ export default async function Homepage({ searchParams }: PageProps) {
                       </h2>
                       
                       {/* Author & Date Row */}
-                      <div className="flex items-center gap-3.5 text-xs font-semibold text-slate-400">
+                      <div className="flex items-center gap-3.5 text-sm font-semibold text-slate-400">
                         <span className="flex items-center gap-1">
                           <User className="h-3.5 w-3.5 text-orange-500" />
                           By {post.author_name}
@@ -210,7 +210,7 @@ export default async function Homepage({ searchParams }: PageProps) {
                       </div>
                       
                       {/* Excerpt */}
-                      <p className="text-slate-500 text-sm leading-relaxed line-clamp-3">
+                      <p className="text-slate-500 text-base leading-relaxed line-clamp-3">
                         {post.summary || 'Click to view the full details of this publication.'}
                       </p>
                     </div>
@@ -227,7 +227,7 @@ export default async function Homepage({ searchParams }: PageProps) {
                         <Link
                           key={pageNum}
                           href={`/?page=${pageNum}`}
-                          className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-sm ${
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all shadow-sm ${
                             isActive
                               ? 'bg-orange-600 text-white shadow-orange-600/10'
                               : 'bg-white border border-slate-200 text-slate-600 hover:border-orange-500 hover:text-orange-600'
@@ -241,7 +241,7 @@ export default async function Homepage({ searchParams }: PageProps) {
                     {currentPage < totalPages && (
                       <Link
                         href={`/?page=${currentPage + 1}`}
-                        className="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold hover:border-orange-500 hover:text-orange-600 transition-all shadow-sm"
+                        className="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-600 flex items-center justify-center text-sm font-bold hover:border-orange-500 hover:text-orange-600 transition-all shadow-sm"
                       >
                         &gt;
                       </Link>
@@ -263,7 +263,7 @@ export default async function Homepage({ searchParams }: PageProps) {
            ======================================================== */}
         <section className="space-y-6 pt-8 border-t border-slate-100">
           <div className="flex items-center">
-            <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-600 text-white text-xs font-black uppercase tracking-wider shadow-sm">
+            <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-600 text-white text-sm font-black uppercase tracking-wider shadow-sm">
               <ArrowUpRight className="h-3.5 w-3.5" />
               You Missed
             </div>
@@ -271,7 +271,7 @@ export default async function Homepage({ searchParams }: PageProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {trending.length === 0 ? (
-              <div className="col-span-full text-center py-10 text-slate-400 text-xs italic">
+              <div className="col-span-full text-center py-10 text-slate-400 text-sm italic">
                 No items seeded
               </div>
             ) : (
@@ -292,7 +292,7 @@ export default async function Homepage({ searchParams }: PageProps) {
                     
                     {/* Floating category badge on top-left of image */}
                     {post.category_name && (
-                      <span className="absolute top-3 left-3 bg-orange-600 text-white font-extrabold text-[8px] uppercase tracking-wider px-2 py-0.5 rounded shadow">
+                      <span className="absolute top-3 left-3 bg-orange-600 text-white font-extrabold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded shadow">
                         {post.category_name}
                       </span>
                     )}
@@ -300,13 +300,13 @@ export default async function Homepage({ searchParams }: PageProps) {
 
                   {/* Body Content */}
                   <div className="p-4 flex-1 flex flex-col justify-between">
-                    <h4 className="font-bold text-[12px] leading-snug text-slate-900 line-clamp-3 hover:text-orange-600 transition-colors">
+                    <h4 className="font-bold text-sm leading-snug text-slate-900 line-clamp-3 hover:text-orange-600 transition-colors">
                       <Link href={`/posts/${post.slug}`}>{post.title}</Link>
                     </h4>
 
                     {/* Bottom Details + Arrow Icon */}
                     <div className="flex items-center justify-between border-t border-slate-50 pt-2.5">
-                      <span className="text-[10px] text-slate-400 font-semibold">
+                      <span className="text-xs text-slate-400 font-semibold">
                         {post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { dateStyle: 'short' }) : ''}
                       </span>
                       <Link

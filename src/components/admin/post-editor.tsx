@@ -27,7 +27,7 @@ import {
   Activity,
   BookOpen
 } from 'lucide-react';
-import BlockEditor, { Block, compileBlocksToMarkdown } from './block-editor';
+import BlockEditor, { Block, compileBlocksToMarkdown, parseHtmlToBlocks } from './block-editor';
 import VisualBuilder from './visual-builder';
 import BlocksRenderer from '@/components/public/blocks-renderer';
 import VisualRenderer from '@/components/public/visual-renderer';
@@ -194,18 +194,23 @@ export default function PostEditor({ postId }: PostEditorProps) {
           }
           
           if (loadedBlocks.length === 0 && post.content) {
-            loadedBlocks = post.content.split('\n\n').map((para: string, idx: number) => {
-              const id = `legacy-${idx}-${Math.random().toString(36).substr(2, 4)}`;
-              if (para.startsWith('## ')) {
-                return { id, type: 'h2', data: { text: para.replace('## ', '') } };
-              } else if (para.startsWith('### ')) {
-                return { id, type: 'h3', data: { text: para.replace('### ', '') } };
-              } else if (para.startsWith('# ')) {
-                return { id, type: 'h1', data: { text: para.replace('# ', '') } };
-              } else {
-                return { id, type: 'paragraph', data: { text: para } };
-              }
-            });
+            // Check if it's raw HTML from WordPress
+            if (post.content.includes('<p>') || post.content.includes('<p ') || post.content.includes('<h2') || post.content.includes('<figure')) {
+              loadedBlocks = parseHtmlToBlocks(post.content);
+            } else {
+              loadedBlocks = post.content.split('\n\n').map((para: string, idx: number) => {
+                const id = `legacy-${idx}-${Math.random().toString(36).substr(2, 4)}`;
+                if (para.startsWith('## ')) {
+                  return { id, type: 'h2', data: { text: para.replace('## ', '') } };
+                } else if (para.startsWith('### ')) {
+                  return { id, type: 'h3', data: { text: para.replace('### ', '') } };
+                } else if (para.startsWith('# ')) {
+                  return { id, type: 'h1', data: { text: para.replace('# ', '') } };
+                } else {
+                  return { id, type: 'paragraph', data: { text: para } };
+                }
+              });
+            }
           }
           
           if (loadedBlocks.length === 0) {
@@ -762,7 +767,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
               </div>
             ) : (
               // Regular Focus/Canvas Editor
-              <div className={`w-full bg-white border border-slate-200/80 shadow-sm rounded-3xl p-6 md:p-8 min-h-[85vh] ${editorType === 'blog' ? 'max-w-4xl' : 'max-w-full'}`}>
+              <div className={`w-full bg-white border border-slate-200/80 shadow-sm rounded-3xl p-6 md:p-8 min-h-[85vh] h-fit shrink-0 ${editorType === 'blog' ? 'max-w-4xl' : 'max-w-full'}`}>
                 {renderCanvasContent()}
               </div>
             )}

@@ -4,6 +4,7 @@ import "./globals.css";
 import { settingsService } from "@/modules/settings";
 import { generateThemeStyle } from "@/lib/theme";
 import { generateTypographyStyle, DEFAULT_TYPOGRAPHY, TypographySettings } from "@/lib/typography";
+import NextTopLoader from "nextjs-toploader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -175,6 +176,7 @@ export default async function RootLayout({
         )}
       </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <NextTopLoader showSpinner={false} />
         {children}
         {/* Custom Footer Scripts */}
         {footerScripts && (

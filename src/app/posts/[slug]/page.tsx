@@ -205,6 +205,17 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
             if (blocks && blocks.length > 0) {
               return <BlocksRenderer blocks={blocks} />;
             }
+            
+            // Render HTML if it contains standard HTML tags (like WP imports)
+            if (contentText.includes('<p>') || contentText.includes('<p ') || contentText.includes('<h2') || contentText.includes('<figure')) {
+              return (
+                <div 
+                  className="wp-content space-y-6 [&>p]:leading-normal [&>p]:font-normal [&>p]:text-[20px] [&>p]:text-black [&>p]:tracking-[-0.03em] [&>p]:mb-8 [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:mt-8 [&>h2]:mb-4 [&>h3]:text-xl [&>h3]:font-bold [&>h3]:mt-6 [&>h3]:mb-3 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-6 [&>li]:mb-2 [&>figure]:my-8 [&_img]:rounded-2xl"
+                  dangerouslySetInnerHTML={{ __html: contentText }}
+                />
+              );
+            }
+
             return (
               <div className="space-y-6">
                 {contentText.split('\n\n').map((para, idx) => {
@@ -262,7 +273,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
               <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold shrink-0">
                 {post.author_name ? post.author_name.charAt(0).toUpperCase() : 'A'}
               </div>
-              <div className="text-xs">
+              <div className="text-sm">
                 <p className="font-bold text-slate-800">By {post.author_name}</p>
                 <p className="text-slate-400 mt-0.5">
                   Published on {post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'Draft'}
@@ -273,7 +284,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
 
           // Helper metadata info renderer
           const renderMetaInfo = () => (
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase">
+            <div className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase">
               <span className="text-orange-500">{post.category_name || 'General'}</span>
               <span>•</span>
               <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" /> {post.read_time} min read</span>
@@ -285,7 +296,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
           // Helper social sharing links renderer
           const renderSocialSharing = () => (
             <div className="border-y border-slate-100 py-4 flex items-center justify-between gap-4 flex-wrap">
-              <span className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
+              <span className="text-sm font-bold text-slate-500 flex items-center gap-1.5">
                 <Share2 className="h-4 w-4 text-orange-500" /> Share This Article:
               </span>
               <div className="flex gap-2">
@@ -296,7 +307,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                   className={buttonVariants({
                     variant: "outline",
                     size: "sm",
-                    className: "h-8 text-xs border-slate-200 flex items-center gap-1.5"
+                    className: "h-8 text-sm border-slate-200 flex items-center gap-1.5"
                   })}
                 >
                   <svg className="h-3.5 w-3.5 fill-current text-[#1DA1F2]" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -309,7 +320,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                   className={buttonVariants({
                     variant: "outline",
                     size: "sm",
-                    className: "h-8 text-xs border-slate-200 flex items-center gap-1.5"
+                    className: "h-8 text-sm border-slate-200 flex items-center gap-1.5"
                   })}
                 >
                   <svg className="h-3.5 w-3.5 fill-current text-[#1877F2]" viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/></svg>
@@ -322,7 +333,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                   className={buttonVariants({
                     variant: "outline",
                     size: "sm",
-                    className: "h-8 text-xs border-slate-200 flex items-center gap-1.5"
+                    className: "h-8 text-sm border-slate-200 flex items-center gap-1.5"
                   })}
                 >
                   <svg className="h-3.5 w-3.5 fill-current text-[#0A66C2]" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
@@ -340,7 +351,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                 Related Articles
               </h3>
               {relatedPosts.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No related articles found.</p>
+                <p className="text-sm text-slate-400 italic">No related articles found.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {relatedPosts.map((rel) => (
@@ -354,15 +365,15 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                           </div>
                         )}
                       </div>
-                      <h4 className="font-semibold text-xs text-slate-900 hover:text-orange-500 transition-colors line-clamp-2 leading-snug mt-2 flex-1">
-                        <Link href={`/posts/${rel.slug}`}>{rel.title}</Link>
+                      <h4 className="font-semibold text-sm text-slate-900 hover:text-orange-500 transition-colors line-clamp-2 leading-snug mt-2 flex-1">
+                        <Link href={`/posts/${rel.slug}`} dangerouslySetInnerHTML={{ __html: rel.title }} />
                       </h4>
                       <Link
                         href={`/posts/${rel.slug}`}
                         className={buttonVariants({
                           variant: "ghost",
                           size: "sm",
-                          className: "text-orange-500 text-[10px] font-bold p-0 justify-start mt-2 hover:bg-transparent flex items-center"
+                          className: "text-orange-500 text-xs font-bold p-0 justify-start mt-2 hover:bg-transparent flex items-center"
                         })}
                       >
                         Read Article <ArrowRight className="h-3 w-3 ml-0.5" />
@@ -383,14 +394,14 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
               </h3>
               <div className="space-y-3.5">
                 <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                  <p className="text-xs font-bold text-slate-800">Sarah Jenkins</p>
-                  <p className="text-slate-500 text-xs leading-normal">
+                  <p className="text-sm font-bold text-slate-800">Sarah Jenkins</p>
+                  <p className="text-slate-500 text-sm leading-normal">
                     This is an incredibly detailed writeup! The repository architecture suggestion makes scaling the blog to marketplace modules look very clean.
                   </p>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                  <p className="text-xs font-bold text-slate-800">David Miller</p>
-                  <p className="text-slate-500 text-xs leading-normal">
+                  <p className="text-sm font-bold text-slate-800">David Miller</p>
+                  <p className="text-slate-500 text-sm leading-normal">
                     Great tutorial on raw SQL pool queries in Next.js. The speed is significantly faster than Prisma overhead.
                   </p>
                 </div>
@@ -398,13 +409,13 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
 
               {/* Form placeholder */}
               <div className="space-y-3 pt-3 border-t border-slate-100">
-                <p className="text-xs font-bold text-slate-600">Leave a Reply</p>
+                <p className="text-sm font-bold text-slate-600">Leave a Reply</p>
                 <textarea
                   placeholder="Write your comment here..."
-                  className="w-full text-xs p-3 rounded-lg border border-slate-200 focus:outline-none focus:border-orange-500 h-20"
+                  className="w-full text-sm p-3 rounded-lg border border-slate-200 focus:outline-none focus:border-orange-500 h-20"
                   disabled
                 />
-                <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold h-8" disabled>
+                <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold h-8" disabled>
                   Submit Comment (Future Release)
                 </Button>
               </div>
@@ -417,10 +428,11 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
               <div className="max-w-3xl mx-auto py-10 animate-in fade-in duration-300 space-y-8">
                 <div className="text-center space-y-4">
                   {renderMetaInfo()}
-                  <h1 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight max-w-2xl mx-auto">
-                    {post.title}
-                  </h1>
-                  {post.summary && <p className="text-slate-500 text-sm max-w-xl mx-auto">{post.summary}</p>}
+                  <h1 
+                    className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight max-w-2xl mx-auto"
+                    dangerouslySetInnerHTML={{ __html: post.title }}
+                  />
+                  {post.summary && <p className="text-slate-500 text-sm max-w-xl mx-auto" dangerouslySetInnerHTML={{ __html: post.summary }} />}
                   <div className="flex justify-center border-y border-slate-100 py-1.5 max-w-md mx-auto">
                     {renderAuthorBlock()}
                   </div>
@@ -457,13 +469,15 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-slate-200 pb-10">
                   <div className="lg:col-span-7 space-y-4">
                     {renderMetaInfo()}
-                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-none text-slate-900">
-                      {post.title}
-                    </h1>
+                    <h1 
+                      className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-none text-slate-900"
+                      dangerouslySetInnerHTML={{ __html: post.title }}
+                    />
                     {post.summary && (
-                      <p className="text-base sm:text-lg text-slate-500 leading-relaxed border-l-4 border-orange-500 pl-4 italic">
-                        {post.summary}
-                      </p>
+                      <p 
+                        className="text-base sm:text-lg text-slate-500 leading-relaxed border-l-4 border-orange-500 pl-4 italic"
+                        dangerouslySetInnerHTML={{ __html: post.summary }}
+                      />
                     )}
                     <div className="pt-2">
                       {renderAuthorBlock()}
@@ -506,7 +520,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
           return (
             <div className="editorial-container py-10 animate-in fade-in duration-300">
               {/* Ad Block Placeholder (Header) */}
-              <div className="bg-slate-100/80 border text-[10px] font-semibold text-slate-400 py-3 text-center rounded-2xl mb-8 tracking-wider uppercase">
+              <div className="bg-slate-100/80 border text-xs font-semibold text-slate-400 py-3 text-center rounded-2xl mb-8 tracking-wider uppercase">
                 Advertisement Block
               </div>
 
@@ -516,9 +530,10 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                   {/* Header info */}
                   <div className="space-y-4">
                     {renderMetaInfo()}
-                    <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
-                      {post.title}
-                    </h1>
+                    <h1 
+                      className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight leading-tight"
+                      dangerouslySetInnerHTML={{ __html: post.title }}
+                    />
 
                     {/* Author bio details */}
                     <div className="border-y border-slate-100 py-1">
@@ -546,11 +561,11 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                     {/* Desktop Table of Contents (Left) */}
                     {headings.length > 0 && (
                       <div className="hidden md:block md:col-span-1 space-y-4 h-fit sticky top-20">
-                        <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1">
+                        <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1">
                           <TrendingUp className="h-3.5 w-3.5 text-orange-500" />
                           On This Page
                         </h4>
-                        <ul className="space-y-2 text-xs font-semibold text-slate-500 border-l border-slate-100 pl-3">
+                        <ul className="space-y-2 text-sm font-semibold text-slate-500 border-l border-slate-100 pl-3">
                           {headings.map((heading, idx) => (
                             <li key={idx}>
                               <a
@@ -574,7 +589,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                   {renderSocialSharing()}
 
                   {/* Ad Block Placeholder (Footer) */}
-                  <div className="bg-slate-100/80 border text-[10px] font-semibold text-slate-400 py-6 text-center rounded-2xl tracking-wider uppercase">
+                  <div className="bg-slate-100/80 border text-xs font-semibold text-slate-400 py-6 text-center rounded-2xl tracking-wider uppercase">
                     In-Article Placement Box
                   </div>
 

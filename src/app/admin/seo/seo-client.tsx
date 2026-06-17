@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Loader2, Save, AlertTriangle, ShieldCheck, FileText, Share2, Network,
-  Search, Link as LinkIcon, RefreshCw, Layers, CheckCircle, Trash2
+  Search, Link as LinkIcon, RefreshCw, Layers, CheckCircle, Trash2, Activity, XCircle
 } from 'lucide-react';
 
 interface BrokenLink {
@@ -32,7 +32,13 @@ export default function SEOClient() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'indexing' | 'robots' | 'social' | 'schema' | 'broken' | 'clusters'>('general');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'general' | 'indexing' | 'robots' | 'social' | 'schema' | 'broken' | 'clusters'>('dashboard');
+
+  // Health Dashboard State
+  const [healthScore, setHealthScore] = useState<number | null>(null);
+  const [healthMetrics, setHealthMetrics] = useState<any>(null);
+  const [healthIssues, setHealthIssues] = useState<any[]>([]);
+  const [loadingHealth, setLoadingHealth] = useState(true);
 
   // General SEO Settings
   const [siteTitle, setSiteTitle] = useState('');
@@ -100,10 +106,20 @@ export default function SEOClient() {
           setClusters(cData.clusters || []);
           setAllPosts(cData.posts || []);
         }
+
+        // Load Health Data
+        const healthRes = await fetch('/api/admin/seo/health');
+        if (healthRes.ok) {
+          const hData = await healthRes.json();
+          setHealthScore(hData.score);
+          setHealthMetrics(hData.metrics);
+          setHealthIssues(hData.issues || []);
+        }
       } catch (err) {
         console.error('Failed to load SEO data', err);
       } finally {
         setLoading(false);
+        setLoadingHealth(false);
       }
     }
     loadSEOData();
@@ -144,6 +160,24 @@ export default function SEOClient() {
       console.error(err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Refresh Health Data
+  const handleRefreshHealth = async () => {
+    setLoadingHealth(true);
+    try {
+      const healthRes = await fetch('/api/admin/seo/health');
+      if (healthRes.ok) {
+        const hData = await healthRes.json();
+        setHealthScore(hData.score);
+        setHealthMetrics(hData.metrics);
+        setHealthIssues(hData.issues || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingHealth(false);
     }
   };
 
@@ -251,6 +285,7 @@ export default function SEOClient() {
   }
 
   const tabs = [
+    { id: 'dashboard', label: 'Health Dashboard', icon: Activity },
     { id: 'general', label: 'General SEO', icon: Search },
     { id: 'indexing', label: 'Indexing Defaults', icon: ShieldCheck },
     { id: 'robots', label: 'Robots.txt', icon: FileText },
@@ -267,7 +302,7 @@ export default function SEOClient() {
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">SEO Center</h1>
           <p className="text-slate-500 mt-1">Configure XML schemas, audit content anchors, and edit indexing flags.</p>
         </div>
-        {activeTab !== 'broken' && activeTab !== 'clusters' && (
+        {activeTab !== 'dashboard' && activeTab !== 'broken' && activeTab !== 'clusters' && (
           <Button onClick={handleSaveSettings} disabled={saving} className="bg-orange-500 hover:bg-orange-600 text-white font-bold h-10 px-5 shadow-md shadow-orange-500/10 flex items-center gap-1.5">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save SEO Settings
@@ -297,6 +332,94 @@ export default function SEOClient() {
       </div>
 
       {/* Tab Contents */}
+      {activeTab === 'dashboard' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Score Card */}
+            <Card className="border-slate-200/80 shadow-sm flex flex-col items-center justify-center py-8">
+              <CardTitle className="text-slate-500 text-sm mb-4">Overall SEO Score</CardTitle>
+              {loadingHealth ? (
+                <Loader2 className="h-20 w-20 text-orange-500 animate-spin" />
+              ) : (
+                <div className="relative flex items-center justify-center h-40 w-40 rounded-full border-8 border-slate-100">
+                  <div className={`absolute inset-0 rounded-full border-8 border-t-transparent border-r-transparent transform -rotate-45 ${healthScore! >= 80 ? 'border-emerald-500' : healthScore! >= 60 ? 'border-amber-500' : 'border-red-500'}`}></div>
+                  <span className={`text-4xl font-black ${healthScore! >= 80 ? 'text-emerald-500' : healthScore! >= 60 ? 'text-amber-500' : 'text-red-500'}`}>
+                    {healthScore}
+                  </span>
+                </div>
+              )}
+              <Button onClick={handleRefreshHealth} disabled={loadingHealth} variant="outline" className="mt-6 text-xs h-8">
+                {loadingHealth ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5 mr-1.5" />}
+                Refresh Analysis
+              </Button>
+            </Card>
+
+            {/* Metrics Cards */}
+            <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <Card className="border-slate-200/80 shadow-sm flex flex-col justify-center p-4">
+                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Total Posts</span>
+                <span className="text-2xl font-black text-slate-800">{healthMetrics?.totalPosts ?? '-'}</span>
+              </Card>
+              <Card className="border-slate-200/80 shadow-sm flex flex-col justify-center p-4">
+                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Total Images</span>
+                <span className="text-2xl font-black text-slate-800">{healthMetrics?.totalImages ?? '-'}</span>
+              </Card>
+              <Card className="border-slate-200/80 shadow-sm flex flex-col justify-center p-4">
+                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Missing Title</span>
+                <span className={`text-2xl font-black ${healthMetrics?.missingMetaTitle > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                  {healthMetrics?.missingMetaTitle ?? '-'}
+                </span>
+              </Card>
+              <Card className="border-slate-200/80 shadow-sm flex flex-col justify-center p-4">
+                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Missing Desc</span>
+                <span className={`text-2xl font-black ${healthMetrics?.missingMetaDesc > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                  {healthMetrics?.missingMetaDesc ?? '-'}
+                </span>
+              </Card>
+              <Card className="border-slate-200/80 shadow-sm flex flex-col justify-center p-4">
+                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Missing Keywords</span>
+                <span className={`text-2xl font-black ${healthMetrics?.missingFocusKeyword > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                  {healthMetrics?.missingFocusKeyword ?? '-'}
+                </span>
+              </Card>
+              <Card className="border-slate-200/80 shadow-sm flex flex-col justify-center p-4">
+                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Missing Alt Text</span>
+                <span className={`text-2xl font-black ${healthMetrics?.imagesMissingAlt > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                  {healthMetrics?.imagesMissingAlt ?? '-'}
+                </span>
+              </Card>
+            </div>
+          </div>
+
+          {/* Actionable Issues */}
+          <Card className="border-slate-200/80 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-orange-500" /> Actionable Issues
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingHealth ? (
+                <div className="flex items-center gap-2 text-sm text-slate-500"><Loader2 className="h-4 w-4 animate-spin"/> Loading issues...</div>
+              ) : healthIssues.length === 0 ? (
+                <div className="bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl p-4 text-sm font-bold flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5" /> No issues found. Your SEO health is perfect!
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {healthIssues.map((issue, idx) => (
+                    <div key={idx} className={`p-4 rounded-xl border flex items-start gap-3 ${issue.type === 'error' ? 'bg-red-50 border-red-100 text-red-800' : issue.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-amber-50 border-amber-100 text-amber-800'}`}>
+                      {issue.type === 'error' ? <XCircle className="h-5 w-5 shrink-0 mt-0.5" /> : issue.type === 'success' ? <CheckCircle className="h-5 w-5 shrink-0 mt-0.5" /> : <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />}
+                      <span className="text-sm font-semibold">{issue.message}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {activeTab === 'general' && (
         <Card className="border-slate-200/80 shadow-sm">
           <CardHeader>

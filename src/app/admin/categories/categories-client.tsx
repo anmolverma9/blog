@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, Plus, Trash2, FolderPlus, Tags } from 'lucide-react';
+import { Loader2, Plus, Trash2, FolderPlus, Tags, Edit2, X } from 'lucide-react';
 
 interface CategoryItem {
   id: number;
@@ -35,6 +35,7 @@ export default function CategoriesClient() {
   const [catDesc, setCatDesc] = useState('');
   const [catParent, setCatParent] = useState('');
   const [creatingCat, setCreatingCat] = useState(false);
+  const [editCatId, setEditCatId] = useState<number | null>(null);
 
   // Tag Form State
   const [tagName, setTagName] = useState('');
@@ -80,15 +81,34 @@ export default function CategoriesClient() {
     setTagSlug(val.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-'));
   };
 
-  // Add Category Handler
+  const handleEditCategory = (cat: CategoryItem) => {
+    setEditCatId(cat.id);
+    setCatName(cat.name);
+    setCatSlug(cat.slug);
+    setCatDesc(cat.description || '');
+    setCatParent(cat.parent_id?.toString() || '');
+  };
+
+  const handleCancelEditCat = () => {
+    setEditCatId(null);
+    setCatName('');
+    setCatSlug('');
+    setCatDesc('');
+    setCatParent('');
+  };
+
+  // Add/Edit Category Handler
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!catName || !catSlug) return;
 
     setCreatingCat(true);
     try {
-      const res = await fetch('/api/admin/categories', {
-        method: 'POST',
+      const method = editCatId ? 'PUT' : 'POST';
+      const url = editCatId ? `/api/admin/categories/${editCatId}` : '/api/admin/categories';
+      
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: catName,
@@ -99,14 +119,11 @@ export default function CategoriesClient() {
       });
 
       if (res.ok) {
-        setCatName('');
-        setCatSlug('');
-        setCatDesc('');
-        setCatParent('');
+        handleCancelEditCat();
         fetchCategories();
       } else {
         const err = await res.json();
-        alert(err.error || 'Failed to add category');
+        alert(err.error || `Failed to ${editCatId ? 'update' : 'add'} category`);
       }
     } catch (err) {
       console.error(err);
@@ -187,7 +204,9 @@ export default function CategoriesClient() {
             <CardContent>
               {/* Form */}
               <form onSubmit={handleAddCategory} className="space-y-3.5 mb-6 p-4 bg-slate-50/50 border rounded-xl">
-                <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">Add New Category</p>
+                <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                  {editCatId ? 'Edit Category' : 'Add New Category'}
+                </p>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase">Name</label>
@@ -227,19 +246,26 @@ export default function CategoriesClient() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase">Description</label>
-                    <Input
+                    <Textarea
                       placeholder="Brief details..."
                       value={catDesc}
                       onChange={(e) => setCatDesc(e.target.value)}
-                      className="h-9 text-xs border-slate-200"
+                      className="min-h-[60px] text-xs border-slate-200"
                     />
                   </div>
                 </div>
 
-                <Button type="submit" size="sm" className="bg-orange-500 hover:bg-orange-600 text-white w-full h-9 mt-2 text-xs font-bold" disabled={creatingCat}>
-                  {creatingCat ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5 mr-1" />}
-                  Add Category
-                </Button>
+                <div className="flex gap-2 mt-2">
+                  <Button type="submit" size="sm" className="bg-orange-500 hover:bg-orange-600 text-white flex-1 h-9 text-xs font-bold" disabled={creatingCat}>
+                    {creatingCat ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : (editCatId ? <Edit2 className="h-3.5 w-3.5 mr-1" /> : <Plus className="h-3.5 w-3.5 mr-1" />)}
+                    {editCatId ? 'Update Category' : 'Add Category'}
+                  </Button>
+                  {editCatId && (
+                    <Button type="button" variant="outline" size="sm" onClick={handleCancelEditCat} className="h-9 text-xs font-bold" disabled={creatingCat}>
+                      <X className="h-3.5 w-3.5 mr-1" /> Cancel
+                    </Button>
+                  )}
+                </div>
               </form>
 
               {/* Table */}
@@ -264,7 +290,10 @@ export default function CategoriesClient() {
                             {cat.parent_id ? '— ' : ''}{cat.name}
                           </TableCell>
                           <TableCell className="text-xs text-slate-500 font-mono">/{cat.slug}</TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right flex items-center justify-end gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => handleEditCategory(cat)} className="h-7 w-7 text-slate-400 hover:text-blue-500 hover:bg-blue-50">
+                              <Edit2 className="h-3.5 w-3.5" />
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteCategory(cat.id)} className="h-7 w-7 text-slate-400 hover:text-red-500 hover:bg-red-50">
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
@@ -315,11 +344,11 @@ export default function CategoriesClient() {
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-500 uppercase">Description</label>
-                  <Input
+                  <Textarea
                     placeholder="Brief description..."
                     value={tagDesc}
                     onChange={(e) => setTagDesc(e.target.value)}
-                    className="h-9 text-xs border-slate-200"
+                    className="min-h-[60px] text-xs border-slate-200"
                   />
                 </div>
 

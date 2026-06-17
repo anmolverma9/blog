@@ -20,7 +20,8 @@ import {
   Search,
   HelpCircle,
   Layers,
-  CheckSquare
+  CheckSquare,
+  Database
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -50,6 +51,7 @@ export default function Sidebar({ session, siteName = 'System' }: SidebarProps) 
     { label: 'Navigation', href: '/admin/navigation', icon: Menu, show: hasPerm('manage_pages') },
     { label: '301 Redirects', href: '/admin/redirects', icon: Shuffle, show: hasPerm('manage_redirects') },
     { label: 'SEO Center', href: '/admin/seo', icon: Search, show: hasPerm('manage_seo') },
+    { label: 'Import WP', href: '/admin/import', icon: Database, show: hasPerm('manage_settings') },
     { label: 'Settings', href: '/admin/settings', icon: Settings, show: hasPerm('manage_settings') },
     { label: 'Typography', href: '/admin/settings/typography', icon: Type, show: hasPerm('manage_settings') },
     { label: 'My Profile', href: '/admin/profile', icon: UserCircle, show: true },

@@ -87,7 +87,7 @@ export default function HeroSlider({ posts }: HeroSliderProps) {
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5 text-orange-500" />
-                  {post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : ''}
+                  {post.published_at ? new Date(post.published_at).toLocaleDateString('en-US', { dateStyle: 'medium' }) : ''}
                 </span>
               </div>
             </div>
