@@ -5,11 +5,13 @@ import { ArrowUp } from 'lucide-react';
 
 interface FooterProps {
   siteName?: string;
+  siteLogo?: string;
   siteDescription?: string;
 }
 
 export default function Footer({
   siteName = 'Tech Giant World',
+  siteLogo = '',
   siteDescription = 'The latest tech news about the world\'s best...'
 }: FooterProps) {
   const scrollToTop = () => {
@@ -27,9 +29,13 @@ export default function Footer({
           
           {/* Left: Brand Logo & Tagline */}
           <div className="text-center md:text-left space-y-2 max-w-md">
-            <h2 className="text-white text-3xl font-black tracking-tight">
-              {siteName}
-            </h2>
+            {siteLogo ? (
+              <img src={siteLogo} alt={siteName} className="h-12 md:h-14 object-contain mx-auto md:mx-0 mb-3" />
+            ) : (
+              <h2 className="text-white text-3xl font-black tracking-tight">
+                {siteName}
+              </h2>
+            )}
             <p className="text-slate-500 text-xs sm:text-sm font-medium leading-relaxed">
               {siteDescription}
             </p>

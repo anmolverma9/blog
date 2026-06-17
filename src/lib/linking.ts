@@ -30,7 +30,7 @@ export async function getInternalLinkSuggestions(
     const lowerContent = content.toLowerCase();
 
     // Check for existing links to prevent suggesting links that are already present
-    // Matches markdown links like [text](/posts/slug) or HTML links <a href="...">
+    // Matches markdown links like [text](/slug) or HTML links <a href="...">
     const linkRegex = /href=["']([^"']+)["']|\]\(([^)]+)\)/gi;
     const existingSlugs: string[] = [];
     let linkMatch;

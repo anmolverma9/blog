@@ -119,7 +119,7 @@ export default async function ArchivesPage() {
 
                                 {/* Post Card Column */}
                                 <div className="w-full md:w-[46%] pl-10 md:pl-0">
-                                  <Link href={`/posts/${post.slug}`} className="block group">
+                                  <Link href={`/${post.slug}`} className="block group">
                                     <Card className="border-slate-100 hover:border-orange-200 transition-colors shadow-sm bg-white hover:shadow-md">
                                       <CardContent className="p-5 space-y-3">
                                         <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase">

@@ -473,7 +473,7 @@ function PublicBlogGrid({ count }: { count: number }) {
               <h5 className="font-bold text-slate-900 text-sm mt-1 line-clamp-2 leading-snug">{post.title}</h5>
               <p className="text-slate-500 text-[11px] mt-1.5 line-clamp-3">{post.summary || post.content}</p>
             </div>
-            <Link href={`/posts/${post.slug}`} className="text-xs font-bold text-orange-500 hover:text-orange-600 flex items-center gap-0.5 mt-2">
+            <Link href={`/${post.slug}`} className="text-xs font-bold text-orange-500 hover:text-orange-600 flex items-center gap-0.5 mt-2">
               Read Article →
             </Link>
           </div>

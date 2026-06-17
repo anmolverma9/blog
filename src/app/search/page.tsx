@@ -75,7 +75,7 @@ export default async function SearchResultsPage({ searchParams }: SearchPageProp
                       <div>
                         <span className="text-[10px] font-bold text-orange-500 uppercase">{post.category_name || 'General'}</span>
                         <h3 className="font-bold text-slate-900 text-sm md:text-base hover:text-orange-500 transition-colors truncate mt-0.5">
-                          <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+                          <Link href={`/${post.slug}`}>{post.title}</Link>
                         </h3>
                         <p className="text-slate-500 text-xs line-clamp-1 mt-1 leading-normal">{post.summary}</p>
                       </div>

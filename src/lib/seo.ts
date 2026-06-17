@@ -113,7 +113,7 @@ export function generateArticleSchema(post: {
     },
     'mainEntityOfPage': {
       '@type': 'WebPage',
-      '@id': `${siteUrl}/posts/${post.slug}`,
+      '@id': `${siteUrl}/${post.slug}`,
     },
   };
 }

@@ -10,6 +10,22 @@ import { ArrowUpRight, Calendar, User, Eye, BookOpen, Clock } from 'lucide-react
 
 export const revalidate = 0; // Dynamic server rendering
 
+const generatePagination = (currentPage: number, totalPages: number) => {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }).map((_, i) => i + 1);
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, 4, '...', totalPages - 1, totalPages];
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [1, 2, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+  }
+
+  return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+};
+
 interface PageProps {
   searchParams: Promise<{
     page?: string;
@@ -93,7 +109,7 @@ export default async function Homepage({ searchParams }: PageProps) {
                       </span>
                     )}
                     <h3 className="font-bold text-sm sm:text-base leading-snug line-clamp-2 hover:underline">
-                      <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+                      <Link href={`/${post.slug}`}>{post.title}</Link>
                     </h3>
                     <div className="flex items-center gap-2 text-xs text-slate-300 font-semibold">
                       <span className="truncate">By {post.author_name}</span>
@@ -129,7 +145,7 @@ export default async function Homepage({ searchParams }: PageProps) {
                         </span>
                       )}
                       <h5 className="font-bold text-slate-800 text-xs leading-snug line-clamp-2 hover:text-orange-600 transition-colors">
-                        <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+                        <Link href={`/${post.slug}`}>{post.title}</Link>
                       </h5>
                       <span className="text-[10px] text-slate-400 font-semibold block">
                         {post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
@@ -169,7 +185,7 @@ export default async function Homepage({ searchParams }: PageProps) {
                 {feedPosts.map((post) => (
                   <article key={post.id} className="group space-y-4">
                     {/* Featured Image */}
-                    <Link href={`/posts/${post.slug}`} className="block aspect-video w-full rounded-3xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm relative">
+                    <Link href={`/${post.slug}`} className="block aspect-video w-full rounded-3xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm relative">
                       {post.featured_image_path ? (
                         <img
                           src={post.featured_image_path}
@@ -193,7 +209,7 @@ export default async function Homepage({ searchParams }: PageProps) {
                     {/* Meta & Title */}
                     <div className="space-y-2">
                       <h2 className="text-2xl font-black text-slate-900 leading-tight tracking-tight hover:text-orange-600 transition-colors">
-                        <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+                        <Link href={`/${post.slug}`}>{post.title}</Link>
                       </h2>
                       
                       {/* Author & Date Row */}
@@ -220,12 +236,21 @@ export default async function Homepage({ searchParams }: PageProps) {
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-center gap-2 pt-6 border-t border-slate-100">
-                    {Array.from({ length: totalPages }).map((_, idx) => {
-                      const pageNum = idx + 1;
+                    {generatePagination(currentPage, totalPages).map((item, idx) => {
+                      if (item === '...') {
+                        return (
+                          <span key={`ellipsis-${idx}`} className="px-2 text-slate-400 font-bold">
+                            ...
+                          </span>
+                        );
+                      }
+
+                      const pageNum = item as number;
                       const isActive = pageNum === currentPage;
+                      
                       return (
                         <Link
-                          key={pageNum}
+                          key={`page-${pageNum}`}
                           href={`/?page=${pageNum}`}
                           className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all shadow-sm ${
                             isActive
@@ -301,7 +326,7 @@ export default async function Homepage({ searchParams }: PageProps) {
                   {/* Body Content */}
                   <div className="p-4 flex-1 flex flex-col justify-between">
                     <h4 className="font-bold text-sm leading-snug text-slate-900 line-clamp-3 hover:text-orange-600 transition-colors">
-                      <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+                      <Link href={`/${post.slug}`}>{post.title}</Link>
                     </h4>
 
                     {/* Bottom Details + Arrow Icon */}
@@ -310,7 +335,7 @@ export default async function Homepage({ searchParams }: PageProps) {
                         {post.published_at ? new Date(post.published_at).toLocaleDateString(undefined, { dateStyle: 'short' }) : ''}
                       </span>
                       <Link
-                        href={`/posts/${post.slug}`}
+                        href={`/${post.slug}`}
                         className="w-7 h-7 rounded-full bg-slate-50 border group-hover:bg-orange-600 group-hover:text-white transition-all flex items-center justify-center text-slate-400"
                         aria-label="View Post"
                       >

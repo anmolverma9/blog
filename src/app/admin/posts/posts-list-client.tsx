@@ -309,7 +309,7 @@ export default function PostsListClient() {
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Link
-                        href={`/posts/${post.slug}`}
+                        href={`/${post.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={buttonVariants({ variant: "ghost", size: "icon", className: "h-8 w-8 text-slate-500 hover:text-orange-500" })}

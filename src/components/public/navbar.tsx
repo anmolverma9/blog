@@ -7,6 +7,7 @@ import { Search, Menu, X, Bell, Zap } from 'lucide-react';
 
 interface NavbarProps {
   siteName?: string;
+  siteLogo?: string;
   siteDescription?: string;
   menuItems?: Array<{
     label: string;
@@ -17,6 +18,7 @@ interface NavbarProps {
 
 export default function Navbar({
   siteName = 'Tech Giant World',
+  siteLogo = '',
   siteDescription = 'The latest tech news about the world\'s best...',
   menuItems = [],
   breakingNewsTitle = 'Why Social Media Marketing Matters for Modern Business Growth'
@@ -100,15 +102,21 @@ export default function Navbar({
       </div>
 
       {/* 2. Middle Brand Title Area */}
-      <div className="py-8 px-4 text-center max-w-[1440px] mx-auto">
+      <div className="py-8 px-4 text-center max-w-[1440px] mx-auto flex flex-col items-center">
         <Link href="/" className="inline-block">
-          <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
-            {siteName}
-          </h1>
+          {siteLogo ? (
+            <img src={siteLogo} alt={siteName} className="h-16 md:h-20 object-contain mx-auto" />
+          ) : (
+            <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
+              {siteName}
+            </h1>
+          )}
         </Link>
-        <p className="text-slate-500 text-xs sm:text-sm mt-2 font-medium tracking-wide">
-          {siteDescription}
-        </p>
+        {siteDescription && (
+          <p className="text-slate-500 text-xs sm:text-sm mt-3 font-medium tracking-wide">
+            {siteDescription}
+          </p>
+        )}
       </div>
 
       {/* 3. Navigation Bar */}
@@ -134,8 +142,12 @@ export default function Navbar({
 
           {/* Mobile Navigation Header items */}
           <div className="lg:hidden flex items-center justify-between w-full">
-            <Link href="/" className="font-extrabold text-slate-900 text-sm tracking-tight shrink-0">
-              {siteName}
+            <Link href="/" className="shrink-0 flex items-center">
+              {siteLogo ? (
+                <img src={siteLogo} alt={siteName} className="h-8 object-contain" />
+              ) : (
+                <span className="font-extrabold text-slate-900 text-sm tracking-tight">{siteName}</span>
+              )}
             </Link>
             
             <button

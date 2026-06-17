@@ -167,7 +167,7 @@ export default function EditorialClient() {
               </span>
               <DialogTitle className="text-xl font-bold tracking-tight text-slate-900 mt-1">{selectedPost.title}</DialogTitle>
               <DialogDescription className="text-xs">
-                Author: {selectedPost.author_name} • Slug: /posts/{selectedPost.slug}
+                Author: {selectedPost.author_name} • Slug: /{selectedPost.slug}
               </DialogDescription>
             </DialogHeader>
 

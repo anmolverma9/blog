@@ -55,14 +55,14 @@ export async function POST(req: NextRequest) {
           const pathParts = cleanUrl.split('?')[0].split('#')[0].split('/');
           const slug = pathParts[pathParts.length - 1];
 
-          if (cleanUrl.startsWith('/posts/')) {
+          if (cleanUrl.startsWith('/')) {
             if (!validPostSlugs.has(slug.toLowerCase())) {
               isBroken = true;
               statusCode = 404;
               errorMsg = 'Internal post slug not found';
               // Suggest closest match
               const closest = Array.from(validPostSlugs).find(s => s.includes(slug.toLowerCase()) || slug.toLowerCase().includes(s));
-              fixSuggestion = closest ? `Change link to /posts/${closest}` : 'Redirect to posts archive or delete link';
+              fixSuggestion = closest ? `Change link to /${closest}` : 'Redirect to posts archive or delete link';
             }
           } else {
             // General page checks

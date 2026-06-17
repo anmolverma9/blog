@@ -406,7 +406,7 @@ export class PostService {
       meta_title: seoData.meta_title || autoSeo.metaTitle,
       meta_description: seoData.meta_description || autoSeo.metaDescription,
       meta_keywords: seoData.meta_keywords || '',
-      canonical_url: seoData.canonical_url || `/posts/${post.slug}`,
+      canonical_url: seoData.canonical_url || `/${post.slug}`,
       robots_settings: seoData.robots_settings || 'index, follow',
       og_title: seoData.og_title || autoSeo.ogTitle,
       og_description: seoData.og_description || autoSeo.ogDescription,

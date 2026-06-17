@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const { posts } = await postService.getPosts({ status: 'published', limit: 500 });
     posts.forEach((post) => {
       routes.push({
-        url: `${siteUrl}/posts/${post.slug}`,
+        url: `${siteUrl}/${post.slug}`,
         lastModified: post.updated_at ? new Date(post.updated_at) : new Date(),
         changeFrequency: 'weekly' as const,
         priority: 0.7,

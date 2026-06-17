@@ -284,7 +284,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
         setOgTitle(data.ogTitle);
         setOgDescription(data.ogDescription);
         if (!canonicalUrl) {
-          setCanonicalUrl(`/posts/${slug}`);
+          setCanonicalUrl(`/${slug}`);
         }
       }
     } catch (err) {
@@ -578,7 +578,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
         <div className="space-y-1">
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">URL Slug Path</label>
           <div className="flex rounded-lg border border-slate-200 overflow-hidden bg-slate-50 text-xs">
-            <span className="px-3 flex items-center text-slate-400 border-r border-slate-200">/posts/</span>
+            <span className="px-3 flex items-center text-slate-400 border-r border-slate-200">/</span>
             <input
               placeholder="post-slug-url"
               value={slug}
@@ -1052,7 +1052,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
                             <p className="text-slate-700 leading-normal">
                               Match: <strong className="underline decoration-orange-350">{sug.keyword}</strong>
                             </p>
-                            <p className="text-[10px] text-slate-400 font-medium">Target: <code className="bg-white border px-1 py-0.5 rounded text-orange-600">/posts/{sug.targetSlug}</code></p>
+                            <p className="text-[10px] text-slate-400 font-medium">Target: <code className="bg-white border px-1 py-0.5 rounded text-orange-600">/{sug.targetSlug}</code></p>
                           </div>
                         ))
                       )}
@@ -1206,7 +1206,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">URL Slug</label>
                 <div className="flex rounded-lg border border-slate-200 overflow-hidden bg-slate-50">
-                  <span className="px-3 flex items-center text-xs text-slate-400 border-r border-slate-200">/posts/</span>
+                  <span className="px-3 flex items-center text-xs text-slate-400 border-r border-slate-200">/</span>
                   <input
                     placeholder="post-slug"
                     value={slug}
@@ -1285,7 +1285,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
                         <p className="text-slate-500 mt-1">{sug.suggestionText}</p>
                       </div>
                       <div className="text-slate-500 font-semibold shrink-0">
-                        Target Link: <code className="bg-white border px-1.5 py-0.5 rounded text-orange-600">/posts/{sug.targetSlug}</code>
+                        Target Link: <code className="bg-white border px-1.5 py-0.5 rounded text-orange-600">/{sug.targetSlug}</code>
                       </div>
                     </div>
                   ))}

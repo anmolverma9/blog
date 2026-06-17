@@ -62,7 +62,7 @@ export default async function Sidebar({ categories, recentPosts }: SidebarProps)
                 <Newspaper className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
                 <div className="min-w-0">
                   <Link
-                    href={`/posts/${post.slug}`}
+                    href={`/${post.slug}`}
                     className="font-bold text-slate-800 hover:text-orange-600 transition-colors line-clamp-2 leading-relaxed"
                   >
                     {post.title}

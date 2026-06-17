@@ -77,7 +77,7 @@ export default function HeroSlider({ posts }: HeroSliderProps) {
               )}
               
               <h2 className="text-xl md:text-2xl font-black leading-tight hover:underline">
-                <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+                <Link href={`/${post.slug}`}>{post.title}</Link>
               </h2>
 
               <div className="flex items-center gap-4 text-xs font-semibold text-slate-300">

@@ -106,7 +106,7 @@ export default async function CategoryListingPage({ params }: CategoryPageProps)
                           <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" /> {post.read_time} min</span>
                         </div>
                         <h3 className="font-bold text-slate-900 text-lg hover:text-orange-500 transition-colors mt-1.5 tracking-tight">
-                          <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+                          <Link href={`/${post.slug}`}>{post.title}</Link>
                         </h3>
                         <p className="text-slate-500 text-xs line-clamp-2 mt-1.5 leading-relaxed">{post.summary}</p>
                       </div>

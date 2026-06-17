@@ -1,11 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import LayoutWrapper from '@/components/public/layout-wrapper';
 import Sidebar from '@/components/public/sidebar';
 import { postService } from '@/modules/posts';
 import { categoryService } from '@/modules/categories';
-import { settingsService } from '@/modules/settings';
 import { generateArticleSchema, generateFAQSchema, generateReviewSchema, generateBreadcrumbSchema } from '@/lib/seo';
 import { Button, buttonVariants } from '@/components/ui/button';
 import BlocksRenderer from '@/components/public/blocks-renderer';
@@ -13,7 +10,6 @@ import VisualRenderer from '@/components/public/visual-renderer';
 import {
   Clock,
   Eye,
-  Calendar,
   Share2,
   MessageSquare,
   Sparkles,
@@ -22,78 +18,12 @@ import {
   TrendingUp
 } from 'lucide-react';
 
-interface PostPageProps {
-  params: Promise<{
-    slug: string;
-  }>;
+interface SinglePostViewProps {
+  post: any;
+  siteName: string;
 }
 
-export const revalidate = 0; // Dynamic server rendering
-
-// Generate Dynamic SEO Metadata
-export async function generateMetadata({ params }: PostPageProps) {
-  try {
-    const { slug } = await params;
-    const post = await postService.getPostBySlug(slug, 'en');
-    if (!post) return {};
-
-    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const seo = post.seo || {};
-
-    let siteTitle = 'Blog';
-    try {
-      const settings = await settingsService.getSettings();
-      const siteName = settings.site_name || 'Blog';
-      siteTitle = settings.site_title || (siteName.toLowerCase().endsWith('blog') ? siteName : `${siteName} Blog`);
-    } catch {}
-
-    return {
-      title: seo.meta_title || `${post.title} | ${siteTitle}`,
-      description: seo.meta_description || post.summary || '',
-      keywords: seo.meta_keywords || '',
-      alternates: {
-        canonical: seo.canonical_url || `${siteUrl}/posts/${post.slug}`,
-      },
-      openGraph: {
-        title: seo.og_title || post.title,
-        description: seo.og_description || post.summary || '',
-        url: `${siteUrl}/posts/${post.slug}`,
-        images: [{ url: seo.og_image || post.featured_image_path || '/images/default-blog.jpg' }],
-        type: 'article',
-        publishedTime: post.published_at || undefined,
-      },
-      twitter: {
-        card: seo.twitter_card || 'summary_large_image',
-        title: seo.og_title || post.title,
-        description: seo.og_description || post.summary || '',
-        images: [seo.og_image || post.featured_image_path || '/images/default-blog.jpg'],
-      },
-      other: {
-        robots: seo.robots_settings || 'index, follow',
-      },
-    };
-  } catch (e) {
-    console.error('Error generating metadata for post page:', e);
-    return {};
-  }
-}
-
-export default async function SingleBlogPostPage({ params }: PostPageProps) {
-  const { slug } = await params;
-  
-  let siteName = 'Blog';
-  try {
-    const settings = await settingsService.getSettings();
-    siteName = settings.site_name || 'Blog';
-  } catch {}
-
-  // Fetch post details (increments view count dynamically)
-  const post = await postService.getPostBySlug(slug, 'en');
-
-  if (!post || post.status !== 'published' || (post.published_at && new Date(post.published_at) > new Date())) {
-    notFound();
-  }
-
+export default async function SinglePostView({ post, siteName }: SinglePostViewProps) {
   // Load blocks from post.meta.editor_blocks if it exists
   let blocks: any[] | null = null;
   if (post.meta && post.meta.editor_blocks) {
@@ -118,7 +48,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
   const headingRegex = /^##\s+(.+)$/gm;
   const headings: Array<{ text: string; id: string }> = [];
   let match;
-  // To avoid mutating matching state we can iterate
   const contentText = post.content || '';
   while ((match = headingRegex.exec(contentText)) !== null) {
     const text = match[1];
@@ -131,7 +60,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const postUrl = `${siteUrl}/posts/${post.slug}`;
+  const postUrl = `${siteUrl}/${post.slug}`;
 
   // Structured Data Schema markup
   const jsonLdSchema = generateArticleSchema({
@@ -146,7 +75,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
 
   const schemas: any[] = [jsonLdSchema];
   if (blocks) {
-    // 1. FAQ Schema
     const faqBlocks = blocks.filter((b: any) => b.type === 'faq');
     if (faqBlocks.length > 0) {
       const allFaqItems = faqBlocks.flatMap((b: any) => b.data.items || []);
@@ -156,7 +84,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
       }
     }
 
-    // 2. Review Schema
     const reviewBlocks = blocks.filter((b: any) => b.type === 'review');
     reviewBlocks.forEach((b: any) => {
       if (b.data.productName) {
@@ -172,7 +99,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
     });
   }
 
-  // 3. Breadcrumb Schema
   const breadcrumbs = [
     { name: 'Home', url: '/' },
     { name: 'Posts', url: '/posts' },
@@ -180,11 +106,11 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
   if (post.category_name && post.category_slug) {
     breadcrumbs.push({ name: post.category_name, url: `/categories/${post.category_slug}` });
   }
-  breadcrumbs.push({ name: post.title, url: `/posts/${post.slug}` });
+  breadcrumbs.push({ name: post.title, url: `/${post.slug}` });
   schemas.push(generateBreadcrumbSchema(breadcrumbs));
 
   return (
-    <LayoutWrapper>
+    <>
       {/* Inject Structured Data Schemas */}
       {schemas.map((schema, idx) => (
         <script
@@ -206,19 +132,30 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
               return <BlocksRenderer blocks={blocks} />;
             }
             
-            // Render HTML if it contains standard HTML tags (like WP imports)
             if (contentText.includes('<p>') || contentText.includes('<p ') || contentText.includes('<h2') || contentText.includes('<figure')) {
+              let cleanHtml = contentText.trim();
+              
+              // Remove leading empty paragraphs that WP sometimes adds
+              cleanHtml = cleanHtml.replace(/^(?:<p[^>]*>(?:\s|&nbsp;|<br\s*\/?>)*<\/p>\s*)*/i, '');
+              
+              // Remove the first <figure> or <img> if it appears at the very beginning of the post 
+              // to prevent duplicate featured images stacked on top of each other.
+              const firstFigureMatch = cleanHtml.match(/^(?:<figure[^>]*>[\s\S]*?<\/figure>\s*|<img[^>]*>\s*)/i);
+              if (firstFigureMatch) {
+                cleanHtml = cleanHtml.slice(firstFigureMatch[0].length).trim();
+              }
+
               return (
                 <div 
                   className="wp-content space-y-6 [&>p]:leading-normal [&>p]:font-normal [&>p]:text-[20px] [&>p]:text-black [&>p]:tracking-[-0.03em] [&>p]:mb-8 [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:mt-8 [&>h2]:mb-4 [&>h3]:text-xl [&>h3]:font-bold [&>h3]:mt-6 [&>h3]:mb-3 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-6 [&>li]:mb-2 [&>figure]:my-8 [&_img]:rounded-2xl [&_a]:text-orange-600 [&_a]:underline hover:[&_a]:text-orange-700 hover:[&_a]:underline-offset-2 [&_a]:font-semibold [&_a]:transition-colors"
-                  dangerouslySetInnerHTML={{ __html: contentText }}
+                  dangerouslySetInnerHTML={{ __html: cleanHtml }}
                 />
               );
             }
 
             return (
               <div className="space-y-6">
-                {contentText.split('\n\n').map((para, idx) => {
+                {contentText.split('\n\n').map((para: string, idx: number) => {
                   if (para.startsWith('## ')) {
                     const text = para.replace('## ', '');
                     const id = text
@@ -241,7 +178,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                     );
                   }
                   
-                  // Video Embed parser helper
                   const ytRegex = /\[video\]\((?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)\)/i;
                   const ytMatch = para.match(ytRegex);
                   if (ytMatch && ytMatch[1]) {
@@ -260,7 +196,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                     );
                   }
 
-                  // Default paragraph rendering
                   return <p key={idx} className="leading-normal font-normal text-[20px] text-black tracking-[-0.03em] mb-8 whitespace-pre-wrap">{para}</p>;
                 })}
               </div>
@@ -354,7 +289,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                 <p className="text-sm text-slate-400 italic">No related articles found.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {relatedPosts.map((rel) => (
+                  {relatedPosts.map((rel: any) => (
                     <div key={rel.id} className="bg-white border rounded-xl overflow-hidden p-3 shadow-sm hover:shadow hover:border-orange-100/50 transition-all flex flex-col justify-between h-[230px]">
                       <div className="aspect-video w-full rounded-lg overflow-hidden bg-slate-50 shrink-0">
                         {rel.featured_image_path ? (
@@ -366,10 +301,10 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                         )}
                       </div>
                       <h4 className="font-semibold text-sm text-slate-900 hover:text-orange-500 transition-colors line-clamp-2 leading-snug mt-2 flex-1">
-                        <Link href={`/posts/${rel.slug}`} dangerouslySetInnerHTML={{ __html: rel.title }} />
+                        <Link href={`/${rel.slug}`} dangerouslySetInnerHTML={{ __html: rel.title }} />
                       </h4>
                       <Link
-                        href={`/posts/${rel.slug}`}
+                        href={`/${rel.slug}`}
                         className={buttonVariants({
                           variant: "ghost",
                           size: "sm",
@@ -422,7 +357,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
             </div>
           );
 
-          // Layout B: Centered Narrow Minimal Reading Document
           if (postLayout === 'layout_b') {
             return (
               <div className="max-w-3xl mx-auto py-10 animate-in fade-in duration-300 space-y-8">
@@ -461,11 +395,9 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
             );
           }
 
-          // Layout C: Bold Magazine Split Hero
           if (postLayout === 'layout_c') {
             return (
               <div className="py-10 animate-in fade-in duration-300 space-y-10">
-                {/* Hero section */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-slate-200 pb-10">
                   <div className="lg:col-span-7 space-y-4">
                     {renderMetaInfo()}
@@ -496,7 +428,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                   </div>
                 </div>
 
-                {/* Body Content */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                   <div className="lg:col-span-2 space-y-8">
                     <div className="prose prose-slate lg:prose-lg max-w-none text-slate-700 leading-relaxed text-base">
@@ -507,7 +438,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                     {renderCommentsSection()}
                   </div>
                   
-                  {/* Sidebar */}
                   <div>
                     <Sidebar categories={categoriesList} recentPosts={trending} />
                   </div>
@@ -516,18 +446,14 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
             );
           }
 
-          // Layout A (Default): Standard detailed with left TOC and right Sidebar
           return (
             <div className="editorial-container py-10 animate-in fade-in duration-300">
-              {/* Ad Block Placeholder (Header) */}
               <div className="bg-slate-100/80 border text-xs font-semibold text-slate-400 py-3 text-center rounded-2xl mb-8 tracking-wider uppercase">
                 Advertisement Block
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                {/* Main article body */}
                 <div className="lg:col-span-2 space-y-8">
-                  {/* Header info */}
                   <div className="space-y-4">
                     {renderMetaInfo()}
                     <h1 
@@ -535,13 +461,11 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                       dangerouslySetInnerHTML={{ __html: post.title }}
                     />
 
-                    {/* Author bio details */}
                     <div className="border-y border-slate-100 py-1">
                       {renderAuthorBlock()}
                     </div>
                   </div>
 
-                  {/* Featured Image */}
                   <div className="rounded-3xl overflow-hidden border border-slate-100 aspect-video bg-slate-50 relative">
                     {post.featured_image_path ? (
                       <img
@@ -556,9 +480,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                     )}
                   </div>
 
-                  {/* Layout layout wrapper: TOC + Article content */}
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    {/* Desktop Table of Contents (Left) */}
                     {headings.length > 0 && (
                       <div className="hidden md:block md:col-span-1 space-y-4 h-fit sticky top-20">
                         <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1">
@@ -580,7 +502,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                       </div>
                     )}
 
-                    {/* Content body (Right) */}
                     <div className={`${headings.length > 0 ? 'md:col-span-3' : 'md:col-span-4'} prose prose-slate lg:prose-lg max-w-none text-slate-700 leading-relaxed text-base`}>
                       {renderContentBody()}
                     </div>
@@ -588,7 +509,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
 
                   {renderSocialSharing()}
 
-                  {/* Ad Block Placeholder (Footer) */}
                   <div className="bg-slate-100/80 border text-xs font-semibold text-slate-400 py-6 text-center rounded-2xl tracking-wider uppercase">
                     In-Article Placement Box
                   </div>
@@ -597,7 +517,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
                   {renderCommentsSection()}
                 </div>
 
-                {/* Right Column: Sidebar */}
                 <div>
                   <Sidebar categories={categoriesList} recentPosts={trending} />
                 </div>
@@ -606,6 +525,6 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
           );
         })()
       )}
-    </LayoutWrapper>
+    </>
   );
 }

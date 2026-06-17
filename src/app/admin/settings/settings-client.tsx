@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Save, CheckCircle, Palette, Check, Mail, Sliders, Code } from 'lucide-react';
+import { Loader2, Save, CheckCircle, Palette, Check, Mail, Sliders, Code, Upload } from 'lucide-react';
 import { THEME_PRESETS, generateThemeStyle } from '@/lib/theme';
 
 export default function SettingsClient() {
@@ -13,9 +13,11 @@ export default function SettingsClient() {
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'mail' | 'analytics'>('general');
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   // Form states
   const [siteName, setSiteName] = useState('AppLuxe Custom Blog');
+  const [siteLogo, setSiteLogo] = useState('');
   const [brandColor, setBrandColor] = useState('');
   const [gaId, setGaId] = useState('');
   const [headerScripts, setHeaderScripts] = useState('');
@@ -36,6 +38,7 @@ export default function SettingsClient() {
         if (res.ok) {
           const data = await res.json();
           if (data.site_name) setSiteName(data.site_name);
+          if (data.site_logo) setSiteLogo(data.site_logo);
           if (data.google_analytics_id) setGaId(data.google_analytics_id);
           if (data.header_scripts) setHeaderScripts(data.header_scripts);
           if (data.footer_scripts) setFooterScripts(data.footer_scripts);
@@ -73,6 +76,36 @@ export default function SettingsClient() {
     }
   }, [brandColor]);
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setSiteLogo(data.media.file_path);
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Upload failed');
+      }
+    } catch (err) {
+      console.error('Upload failed:', err);
+    } finally {
+      setUploadingLogo(false);
+      // Reset input value so the same file can be uploaded again if needed
+      e.target.value = '';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -84,6 +117,7 @@ export default function SettingsClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           site_name: siteName,
+          site_logo: siteLogo,
           google_analytics_id: gaId,
           header_scripts: headerScripts,
           footer_scripts: footerScripts,
@@ -174,6 +208,23 @@ export default function SettingsClient() {
                     className="h-10 border-slate-200"
                     required
                   />
+                </div>
+                <div className="space-y-1.5 max-w-md">
+                  <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Site Logo URL</label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={siteLogo}
+                      onChange={(e) => setSiteLogo(e.target.value)}
+                      placeholder="e.g. /logo.png or https://example.com/logo.png"
+                      className="h-10 border-slate-200 flex-1"
+                    />
+                    <label className="bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold px-4 rounded-lg cursor-pointer flex items-center justify-center gap-1.5 border border-slate-200 transition-colors shrink-0 shadow-sm h-10">
+                      {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                      Upload
+                      <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={uploadingLogo} />
+                    </label>
+                  </div>
+                  <p className="text-[10px] text-slate-400">Provide an image URL or upload a file to replace the text Site Name.</p>
                 </div>
               </CardContent>
             </Card>

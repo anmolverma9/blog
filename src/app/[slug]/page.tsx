@@ -2,8 +2,10 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import LayoutWrapper from '@/components/public/layout-wrapper';
 import { pageService } from '@/modules/pages';
+import { postService } from '@/modules/posts';
 import { getSession } from '@/lib/auth';
-import VisualRenderer from '@/components/public/visual-renderer';
+import SinglePostView from '@/components/public/single-post-view';
+import SinglePageView from '@/components/public/single-page-view';
 import { settingsService } from '@/modules/settings';
 
 interface StaticPageProps {
@@ -14,104 +16,113 @@ interface StaticPageProps {
 
 export const revalidate = 0; // Dynamic server rendering
 
-// Dynamic SEO metadata for pages
+// Dynamic SEO metadata for both posts and pages
 export async function generateMetadata({ params }: StaticPageProps) {
   try {
     const { slug } = await params;
-    const page = await pageService.getPageBySlug(slug, 'en');
-    if (!page) return {};
-
-    const seo = page.seo || {};
+    
+    // First, check if it's a post
+    const post = await postService.getPostBySlug(slug, 'en');
+    
     let siteName = 'Blog';
+    let siteTitle = 'Blog';
     try {
       const settings = await settingsService.getSettings();
-      siteName = settings.site_name || settings.site_title || 'Blog';
+      siteName = settings.site_name || 'Blog';
+      siteTitle = settings.site_title || (siteName.toLowerCase().endsWith('blog') ? siteName : `${siteName} Blog`);
     } catch {}
 
-    return {
-      title: seo.meta_title || `${page.title} | ${siteName}`,
-      description: seo.meta_description || page.title,
-      keywords: seo.meta_keywords || '',
-      alternates: {
-        canonical: seo.canonical_url || `/${page.slug}`,
-      },
-      other: {
-        robots: seo.robots_settings || 'index, follow',
-      },
-    };
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+    if (post && post.status === 'published' && !(post.published_at && new Date(post.published_at) > new Date())) {
+      const seo = post.seo || {};
+      return {
+        title: seo.meta_title || `${post.title} | ${siteTitle}`,
+        description: seo.meta_description || post.summary || '',
+        keywords: seo.meta_keywords || '',
+        alternates: {
+          canonical: seo.canonical_url || `${siteUrl}/${post.slug}`,
+        },
+        openGraph: {
+          title: seo.og_title || post.title,
+          description: seo.og_description || post.summary || '',
+          url: `${siteUrl}/${post.slug}`,
+          images: [{ url: seo.og_image || post.featured_image_path || '/images/default-blog.jpg' }],
+          type: 'article',
+          publishedTime: post.published_at || undefined,
+        },
+        twitter: {
+          card: seo.twitter_card || 'summary_large_image',
+          title: seo.og_title || post.title,
+          description: seo.og_description || post.summary || '',
+          images: [seo.og_image || post.featured_image_path || '/images/default-blog.jpg'],
+        },
+        other: {
+          robots: seo.robots_settings || 'index, follow',
+        },
+      };
+    }
+
+    // If not a post, check if it's a page
+    const page = await pageService.getPageBySlug(slug, 'en');
+    if (page) {
+      const seo = page.seo || {};
+      return {
+        title: seo.meta_title || `${page.title} | ${siteTitle}`,
+        description: seo.meta_description || page.title,
+        keywords: seo.meta_keywords || '',
+        alternates: {
+          canonical: seo.canonical_url || `${siteUrl}/${page.slug}`,
+        },
+        other: {
+          robots: seo.robots_settings || 'index, follow',
+        },
+      };
+    }
+
+    return {};
   } catch (e) {
-    console.error('Error in page generateMetadata:', e);
+    console.error('Error in root generateMetadata:', e);
     return {};
   }
 }
 
-export default async function StaticPage({ params }: StaticPageProps) {
+export default async function SlugRouterPage({ params }: StaticPageProps) {
   const { slug } = await params;
+  
+  let siteName = 'Blog';
+  try {
+    const settings = await settingsService.getSettings();
+    siteName = settings.site_name || 'Blog';
+  } catch {}
+
+  // 1. Try resolving as a Post
+  const post = await postService.getPostBySlug(slug, 'en');
+  if (post && post.status === 'published' && !(post.published_at && new Date(post.published_at) > new Date())) {
+    return (
+      <LayoutWrapper>
+        <SinglePostView post={post} siteName={siteName} />
+      </LayoutWrapper>
+    );
+  }
+
+  // 2. Try resolving as a Page
   const page = await pageService.getPageBySlug(slug, 'en');
-
-  if (!page) {
-    notFound();
-  }
-
-  // Check draft status
-  if (page.status === 'draft') {
-    const session = await getSession();
-    // Only logged in admins/editors can preview drafts
-    if (!session || (session.role !== 'Super Admin' && session.role !== 'Admin' && session.role !== 'Editor')) {
-      notFound();
+  if (page) {
+    // Check draft status for pages
+    if (page.status === 'draft') {
+      const session = await getSession();
+      if (!session || (session.role !== 'Super Admin' && session.role !== 'Admin' && session.role !== 'Editor')) {
+        notFound();
+      }
     }
+    return (
+      <LayoutWrapper>
+        <SinglePageView page={page} />
+      </LayoutWrapper>
+    );
   }
 
-  const templateName = page.template_file_name || 'standard.tsx';
-  const isVisual = page.content && page.content.startsWith('{') && page.content.includes('"editor_type":"visual"');
-
-  return (
-    <LayoutWrapper>
-      {isVisual ? (
-        <VisualRenderer data={JSON.parse(page.content)} />
-      ) : (
-        <>
-          {/* Template: Landing Page */}
-          {templateName === 'landing.tsx' && (
-            <div className="flex-1 animate-in fade-in duration-300">
-              <div className="bg-slate-900 text-white py-20 text-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-600/20 to-slate-900/60" />
-                <div className="relative z-10 max-w-3xl mx-auto px-4 space-y-4">
-                  <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">{page.title}</h1>
-                  <p className="text-slate-300 text-sm max-w-lg mx-auto">Discover modular ecosystem features built on standard architectures.</p>
-                </div>
-              </div>
-              <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 prose prose-slate text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
-                {page.content}
-              </div>
-            </div>
-          )}
-
-          {/* Template: Full Width */}
-          {templateName === 'fullwidth.tsx' && (
-            <div className="w-full px-6 md:px-12 py-10 max-w-full animate-in fade-in duration-300 space-y-6">
-              <h1 className="text-3xl font-extrabold text-slate-950 tracking-tight">{page.title}</h1>
-              <div className="h-px bg-slate-100" />
-              <div className="prose prose-slate max-w-none text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
-                {page.content}
-              </div>
-            </div>
-          )}
-
-          {/* Template: Standard (Default) */}
-          {templateName === 'standard.tsx' && (
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 animate-in fade-in duration-300 space-y-6">
-              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-950 tracking-tight leading-tight">
-                {page.title}
-              </h1>
-              <div className="h-px bg-slate-100" />
-              <div className="prose prose-slate max-w-none text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
-                {page.content}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </LayoutWrapper>
-  );
+  // 3. Neither found
+  notFound();
 }

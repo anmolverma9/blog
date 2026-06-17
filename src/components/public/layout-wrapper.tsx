@@ -13,6 +13,7 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
   // Load dynamic settings
   const settings = await settingsService.getSettings();
   const siteName = settings.site_name || 'Blog';
+  const siteLogo = settings.site_logo || '';
   const siteDescription = settings.site_description || 'The latest tech news about the world\'s best...';
   const gaId = settings.google_analytics_id || '';
   const headerScripts = settings.header_scripts || '';
@@ -64,7 +65,7 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
       )}
 
       {/* Navigation Bar */}
-      <Navbar siteName={siteName} siteDescription={siteDescription} menuItems={menuItems} breakingNewsTitle={breakingNewsTitle} />
+      <Navbar siteName={siteName} siteLogo={siteLogo} siteDescription={siteDescription} menuItems={menuItems} breakingNewsTitle={breakingNewsTitle} />
 
       {/* Main Workspace content */}
       <div className="flex-1 bg-slate-50/50 flex flex-col">
@@ -72,7 +73,7 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
       </div>
 
       {/* Footer Banner */}
-      <Footer siteName={siteName} siteDescription={siteDescription} />
+      <Footer siteName={siteName} siteLogo={siteLogo} siteDescription={siteDescription} />
 
       {/* 2. Footer Scripts Injections */}
       {footerScripts && (

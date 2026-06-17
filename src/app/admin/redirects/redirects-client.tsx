@@ -111,7 +111,7 @@ export default function RedirectsClient() {
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-500 uppercase">New URL Path</label>
                 <Input
-                  placeholder="e.g. /posts/new-seo-friendly-path"
+                  placeholder="e.g. /new-seo-friendly-path"
                   value={newUrl}
                   onChange={(e) => setNewUrl(e.target.value)}
                   className="h-9 text-xs border-slate-200 focus:border-orange-500 focus:ring-orange-500/20"
