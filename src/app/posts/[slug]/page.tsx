@@ -210,7 +210,7 @@ export default async function SingleBlogPostPage({ params }: PostPageProps) {
             if (contentText.includes('<p>') || contentText.includes('<p ') || contentText.includes('<h2') || contentText.includes('<figure')) {
               return (
                 <div 
-                  className="wp-content space-y-6 [&>p]:leading-normal [&>p]:font-normal [&>p]:text-[20px] [&>p]:text-black [&>p]:tracking-[-0.03em] [&>p]:mb-8 [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:mt-8 [&>h2]:mb-4 [&>h3]:text-xl [&>h3]:font-bold [&>h3]:mt-6 [&>h3]:mb-3 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-6 [&>li]:mb-2 [&>figure]:my-8 [&_img]:rounded-2xl"
+                  className="wp-content space-y-6 [&>p]:leading-normal [&>p]:font-normal [&>p]:text-[20px] [&>p]:text-black [&>p]:tracking-[-0.03em] [&>p]:mb-8 [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:mt-8 [&>h2]:mb-4 [&>h3]:text-xl [&>h3]:font-bold [&>h3]:mt-6 [&>h3]:mb-3 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-6 [&>li]:mb-2 [&>figure]:my-8 [&_img]:rounded-2xl [&_a]:text-orange-600 [&_a]:underline hover:[&_a]:text-orange-700 hover:[&_a]:underline-offset-2 [&_a]:font-semibold [&_a]:transition-colors"
                   dangerouslySetInnerHTML={{ __html: contentText }}
                 />
               );
