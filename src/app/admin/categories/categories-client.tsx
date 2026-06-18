@@ -105,7 +105,9 @@ export default function CategoriesClient() {
     setCreatingCat(true);
     try {
       const method = editCatId ? 'PUT' : 'POST';
-      const url = editCatId ? `/api/admin/categories/${editCatId}` : '/api/admin/categories';
+      const url = editCatId
+        ? `${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/categories/${editCatId}`
+        : `${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/categories`;
       
       const res = await fetch(url, {
         method,

@@ -432,7 +432,9 @@ export default function PostEditor({ postId }: PostEditorProps) {
     };
 
     try {
-      const url = isEdit ? `/api/admin/posts/${postId}` : '/api/admin/posts';
+      const url = isEdit
+        ? `${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/posts/${postId}`
+        : `${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/posts`;
       const method = isEdit ? 'PUT' : 'POST';
 
       const res = await fetch(url, {

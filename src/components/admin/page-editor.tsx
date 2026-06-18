@@ -197,7 +197,9 @@ export default function PageEditor({ pageId }: PageEditorProps) {
     };
 
     try {
-      const url = isEdit ? `/api/admin/pages/${pageId}` : '/api/admin/pages';
+      const url = isEdit
+        ? `${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/pages/${pageId}`
+        : `${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/pages`;
       const method = isEdit ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
