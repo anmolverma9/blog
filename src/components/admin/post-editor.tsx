@@ -378,7 +378,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
   };
 
   // Submit Handler
-  const handleSave = async () => {
+  const handleSave = async (statusOverride?: string) => {
     const isVisual = editorType === 'visual';
     let compiledContent = '';
     if (isVisual) {
@@ -398,13 +398,17 @@ export default function PostEditor({ postId }: PostEditorProps) {
       return;
     }
 
+    if (statusOverride) {
+      setStatus(statusOverride);
+    }
+
     setSaving(true);
     const payload = {
       title,
       slug,
       content: compiledContent,
       summary,
-      status,
+      status: statusOverride || status,
       published_at: publishedAt ? new Date(publishedAt).toISOString().slice(0, 19).replace('T', ' ') : null,
       category_id: categoryId ? Number(categoryId) : null,
       featured_image_id: featuredImageId,
@@ -697,16 +701,16 @@ export default function PostEditor({ postId }: PostEditorProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="h-9 text-xs border-slate-200 text-slate-700" onClick={handleSave} disabled={saving}>
+            <Button variant="outline" className="h-9 text-xs border-slate-200 text-slate-700" onClick={() => handleSave()} disabled={saving}>
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
               Save Draft
             </Button>
             {session?.role === 'Contributor' ? (
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white h-9 text-xs shadow-sm" onClick={() => { setStatus('pending_review'); handleSave(); }} disabled={saving}>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white h-9 text-xs shadow-sm" onClick={() => handleSave('pending_review')} disabled={saving}>
                 Submit Review
               </Button>
             ) : (
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white h-9 text-xs shadow-sm" onClick={() => { setStatus('published'); handleSave(); }} disabled={saving}>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white h-9 text-xs shadow-sm" onClick={() => handleSave('published')} disabled={saving}>
                 Publish
               </Button>
             )}
@@ -1140,17 +1144,17 @@ export default function PostEditor({ postId }: PostEditorProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="border-slate-200 text-slate-700 h-10" onClick={handleSave} disabled={saving}>
+          <Button variant="outline" className="border-slate-200 text-slate-700 h-10" onClick={() => handleSave()} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : null}
             Save Draft
           </Button>
           {session?.role === 'Contributor' ? (
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white h-10 shadow-md shadow-orange-500/10" onClick={() => { setStatus('pending_review'); handleSave(); }} disabled={saving}>
+            <Button className="bg-orange-500 hover:bg-orange-600 text-white h-10 shadow-md shadow-orange-500/10" onClick={() => handleSave('pending_review')} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : null}
               Submit for Review
             </Button>
           ) : (
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white h-10 shadow-md shadow-orange-500/10" onClick={() => { setStatus('published'); handleSave(); }} disabled={saving}>
+            <Button className="bg-orange-500 hover:bg-orange-600 text-white h-10 shadow-md shadow-orange-500/10" onClick={() => handleSave('published')} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : null}
               Publish Post
             </Button>

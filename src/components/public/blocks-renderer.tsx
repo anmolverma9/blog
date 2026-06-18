@@ -65,7 +65,13 @@ const RENDERERS: Record<string, (data: any, allBlocks?: Block[]) => React.ReactN
   image: (data) => (
     <figure className="my-6 text-center space-y-2">
       <div className="rounded-3xl overflow-hidden border border-slate-100 shadow-sm max-h-[550px] bg-slate-50 flex justify-center items-center">
-        <img src={data.url} alt={data.alt} className="max-w-full max-h-full object-contain" loading="lazy" />
+        <img 
+          src={data.url} 
+          alt={data.alt || 'Article image'} 
+          title={data.title || data.alt || 'Article image'} 
+          className="max-w-full max-h-full object-contain" 
+          loading="lazy" 
+        />
       </div>
       {data.caption && (
         <figcaption className="text-xs sm:text-sm text-slate-400 italic font-medium">
@@ -77,11 +83,19 @@ const RENDERERS: Record<string, (data: any, allBlocks?: Block[]) => React.ReactN
 
   gallery: (data) => (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 my-6">
-      {(data.urls || []).map((url: string, idx: number) => (
-        <div key={idx} className="aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50 group">
-          <img src={url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
-        </div>
-      ))}
+      {(data.urls || []).map((url: string, idx: number) => {
+        const fallbackText = `Gallery Image ${idx + 1}`;
+        return (
+          <div key={idx} className="aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50 group">
+            <img 
+              src={url} 
+              alt={data.alt || fallbackText} 
+              title={data.title || data.alt || fallbackText} 
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" 
+            />
+          </div>
+        );
+      })}
     </div>
   ),
 

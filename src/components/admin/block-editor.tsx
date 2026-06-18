@@ -358,15 +358,91 @@ export default function BlockEditor({ initialBlocks = [], onChange, postId = 'ne
   };
 
   // Clipboard Paste formatting translator
-  const handlePaste = (e: React.ClipboardEvent, index: number) => {
+  const handlePaste = async (e: React.ClipboardEvent, index: number) => {
+    // 1. Check if raw files (like screenshots) are pasted
+    const files = e.clipboardData.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith('image/')) {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+          const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            const newBlock: Block = {
+              id: Math.random().toString(36).substr(2, 9),
+              type: 'image',
+              data: {
+                url: data.media.file_path,
+                alt: data.media.alt_text || data.media.filename,
+                caption: '',
+              }
+            };
+            const updated = [...blocks];
+            updated.splice(index, 1, newBlock);
+            updateBlocksAndHistory(updated);
+          }
+        } catch (err) {
+          console.error('Failed to upload pasted screenshot:', err);
+        }
+        return;
+      }
+    }
+
+    // 2. Check if HTML is pasted (from other websites)
     const html = e.clipboardData.getData('text/html');
     if (html) {
       e.preventDefault();
       const parsedBlocks = parseHtmlToBlocks(html);
       if (parsedBlocks.length > 0) {
+        // Insert parsed blocks immediately with the original URLs
         const updated = [...blocks];
         updated.splice(index, 1, ...parsedBlocks);
-        updateBlocksAndHistory(updated);
+        setBlocks(updated);
+        
+        // Background upload for external hotlinked images
+        const uploadedBlocks = await Promise.all(
+          parsedBlocks.map(async (block) => {
+            if (block.type === 'image' && block.data.url && block.data.url.startsWith('http')) {
+              try {
+                const formData = new FormData();
+                formData.append('url', block.data.url);
+                const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media', {
+                  method: 'POST',
+                  body: formData,
+                });
+                
+                if (res.ok) {
+                  const data = await res.json();
+                  return {
+                    ...block,
+                    data: {
+                      ...block.data,
+                      url: data.media.file_path,
+                      alt: data.media.alt_text || data.media.filename,
+                    }
+                  };
+                }
+              } catch (err) {
+                console.error('Failed to auto-upload external image:', err);
+              }
+            }
+            return block;
+          })
+        );
+        
+        // Re-inject with updated local upload paths and sync history
+        const finalUpdated = [...blocks];
+        finalUpdated.splice(index, 1, ...uploadedBlocks);
+        updateBlocksAndHistory(finalUpdated);
       }
     }
   };
@@ -601,7 +677,8 @@ export default function BlockEditor({ initialBlocks = [], onChange, postId = 'ne
                           if (mediaTargetType === 'image') {
                             updateBlockData(mediaTargetBlockId, {
                               url: item.file_path,
-                              alt: item.filename,
+                              alt: item.alt_text || item.filename,
+                              title: item.title_text || item.filename,
                               caption: '',
                             });
                           } else if (mediaTargetType === 'gallery') {
@@ -1019,11 +1096,17 @@ function renderBlockInput(
               <img src={data.url} alt={data.alt} className="max-h-full max-w-full object-contain" />
             </div>
           )}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Input
               placeholder="Alt description text..."
               value={data.alt || ''}
               onChange={(e) => onChange({ ...data, alt: e.target.value })}
+              className="text-[11px] h-8 border-slate-150"
+            />
+            <Input
+              placeholder="Image SEO Title..."
+              value={data.title || ''}
+              onChange={(e) => onChange({ ...data, title: e.target.value })}
               className="text-[11px] h-8 border-slate-150"
             />
             <Input
@@ -1835,7 +1918,7 @@ export function compileBlocksToMarkdown(blocks: Block[]): string {
       case 'h3':
         return `### ${data.text || ''}`;
       case 'image':
-        return `![${data.alt || ''}](${data.url || ''})\n\n_${data.caption || ''}_`;
+        return `![${data.alt || ''}](${data.url || ''}${data.title ? ` "${data.title}"` : ''})\n\n_${data.caption || ''}_`;
       case 'gallery':
         return (data.urls || []).map((url: string) => `![](${url})`).join('\n');
       case 'video':

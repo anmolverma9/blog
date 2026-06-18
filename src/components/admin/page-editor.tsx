@@ -172,10 +172,14 @@ export default function PageEditor({ pageId }: PageEditorProps) {
   };
 
   // Submit Handler
-  const handleSave = async () => {
+  const handleSave = async (statusOverride?: string) => {
     if (!title || !slug || !content || !templateId) {
       alert('Title, slug, content, and template are required.');
       return;
+    }
+
+    if (statusOverride) {
+      setStatus(statusOverride);
     }
 
     setSaving(true);
@@ -184,7 +188,7 @@ export default function PageEditor({ pageId }: PageEditorProps) {
       slug,
       content,
       template_id: Number(templateId),
-      status,
+      status: statusOverride || status,
       seo: {
         meta_title: metaTitle || title,
         meta_description: metaDescription || title,
@@ -348,11 +352,11 @@ export default function PageEditor({ pageId }: PageEditorProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="h-9 text-xs border-slate-200 text-slate-700" onClick={handleSave} disabled={saving}>
+            <Button variant="outline" className="h-9 text-xs border-slate-200 text-slate-700" onClick={() => handleSave()} disabled={saving}>
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
               Save Draft
             </Button>
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white h-9 text-xs shadow-sm" onClick={() => { setStatus('published'); handleSave(); }} disabled={saving}>
+            <Button className="bg-orange-500 hover:bg-orange-600 text-white h-9 text-xs shadow-sm" onClick={() => handleSave('published')} disabled={saving}>
               Publish
             </Button>
           </div>
@@ -555,11 +559,11 @@ export default function PageEditor({ pageId }: PageEditorProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="border-slate-200 text-slate-700 h-10" onClick={handleSave} disabled={saving}>
+          <Button variant="outline" className="border-slate-200 text-slate-700 h-10" onClick={() => handleSave()} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : null}
             Save Draft
           </Button>
-          <Button className="bg-orange-500 hover:bg-orange-600 text-white h-10 shadow-md shadow-orange-500/10" onClick={() => { setStatus('published'); handleSave(); }} disabled={saving}>
+          <Button className="bg-orange-500 hover:bg-orange-600 text-white h-10 shadow-md shadow-orange-500/10" onClick={() => handleSave('published')} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : null}
             Publish Page
           </Button>

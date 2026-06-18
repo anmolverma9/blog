@@ -293,7 +293,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
                     <div key={rel.id} className="bg-white border rounded-xl overflow-hidden p-3 shadow-sm hover:shadow hover:border-orange-100/50 transition-all flex flex-col justify-between h-[230px]">
                       <div className="aspect-video w-full rounded-lg overflow-hidden bg-slate-50 shrink-0">
                         {rel.featured_image_path ? (
-                          <img src={rel.featured_image_path} alt={rel.title} className="w-full h-full object-cover" />
+                          <img src={rel.featured_image_path} alt={rel.title} title={rel.title} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-300">
                             <BookOpen className="h-6 w-6" />
@@ -374,7 +374,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
 
                 <div className="rounded-3xl overflow-hidden border border-slate-150 shadow-md bg-slate-50 max-h-[450px]">
                   {post.featured_image_path ? (
-                    <img src={post.featured_image_path} alt={post.title} className="w-full h-full object-cover" />
+                    <img src={post.featured_image_path} alt={post.title} title={post.title} className="w-full h-full object-cover" />
                   ) : (
                     <div className="h-64 flex items-center justify-center text-slate-300">
                       <BookOpen className="h-16 w-16" />
@@ -418,7 +418,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
                   <div className="lg:col-span-5">
                     <div className="rounded-3xl overflow-hidden border border-slate-100 shadow-2xl aspect-[4/3] bg-slate-50">
                       {post.featured_image_path ? (
-                        <img src={post.featured_image_path} alt={post.title} className="w-full h-full object-cover" />
+                        <img src={post.featured_image_path} alt={post.title} title={post.title} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-300">
                           <BookOpen className="h-16 w-16" />
@@ -471,6 +471,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
                       <img
                         src={post.featured_image_path}
                         alt={post.title}
+                        title={post.title}
                         className="w-full h-full object-cover"
                       />
                     ) : (
