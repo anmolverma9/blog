@@ -94,6 +94,9 @@ export default async function RootLayout({
     gaId = await settingsService.getGoogleAnalyticsId();
 
     const settings = await settingsService.getSettings();
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const siteDescription = settings.site_description || settings.default_meta_description || 'Next generation advertising platform.';
+
     if (settings.org_schema_name) {
       let socialArray = [];
       try {
@@ -103,6 +106,8 @@ export default async function RootLayout({
         '@context': 'https://schema.org',
         '@type': 'Organization',
         name: settings.org_schema_name,
+        url: siteUrl,
+        description: siteDescription,
         logo: settings.org_schema_logo || undefined,
         sameAs: socialArray,
       };
@@ -113,7 +118,8 @@ export default async function RootLayout({
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: settings.web_schema_name,
-        url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+        url: siteUrl,
+        description: siteDescription,
       };
     }
   } catch (err) {

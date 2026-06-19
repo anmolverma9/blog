@@ -64,13 +64,19 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const postUrl = `${siteUrl}/${post.slug}`;
 
+  const authorAvatarUrl = post.author_avatar_path
+    ? (post.author_avatar_path.startsWith('http') ? post.author_avatar_path : `${siteUrl}${post.author_avatar_path}`)
+    : undefined;
+
   // Structured Data Schema markup
   const jsonLdSchema = generateArticleSchema({
     title: post.title,
     slug: post.slug,
     summary: post.summary || '',
     published_at: post.published_at || new Date().toISOString(),
+    updated_at: post.updated_at || undefined,
     author_name: post.author_name || `${siteName} Editor`,
+    author_avatar_url: authorAvatarUrl,
     featured_image_url: post.featured_image_path || undefined,
     category_name: post.category_name || undefined,
   }, siteName);

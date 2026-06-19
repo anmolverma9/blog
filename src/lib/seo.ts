@@ -87,11 +87,14 @@ export function generateArticleSchema(post: {
   slug: string;
   summary: string;
   published_at: string;
+  updated_at?: string | Date;
   author_name: string;
+  author_avatar_url?: string;
   featured_image_url?: string;
   category_name?: string;
 }, siteName?: string) {
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const authorSlug = post.author_name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -99,17 +102,27 @@ export function generateArticleSchema(post: {
     'description': post.summary || post.title,
     'image': post.featured_image_url ? `${siteUrl}${post.featured_image_url}` : `${siteUrl}/images/default-blog.jpg`,
     'datePublished': post.published_at,
+    'dateModified': post.updated_at ? new Date(post.updated_at).toISOString() : post.published_at,
     'author': {
       '@type': 'Person',
       'name': post.author_name,
+      'url': `${siteUrl}/authors/${authorSlug}`,
+      'image': post.author_avatar_url || undefined,
+      'jobTitle': 'Author',
+      'worksFor': {
+        '@type': 'Organization',
+        'name': siteName || 'Blog',
+      }
     },
     'publisher': {
       '@type': 'Organization',
       'name': siteName || 'Blog',
+      'url': siteUrl,
       'logo': {
         '@type': 'ImageObject',
         'url': `${siteUrl}/logo.png`,
       },
+      'description': `Official blog of ${siteName || 'Blog'}`,
     },
     'mainEntityOfPage': {
       '@type': 'WebPage',
