@@ -946,25 +946,32 @@ export function parseHtmlToBlocks(html: string): Block[] {
     return (tmp.textContent || tmp.innerText || '').trim();
   };
 
-  for (const node of children) {
+  const traverse = (node: Node) => {
     if (node.nodeType === Node.ELEMENT_NODE) {
       const el = node as HTMLElement;
       const tag = el.tagName.toLowerCase();
 
-      if (tag === 'h1') {
-        blocks.push({ id: Math.random().toString(36).substr(2, 9), type: 'h1', data: { text: cleanHtmlText(el) } });
-      } else if (tag === 'h2') {
-        blocks.push({ id: Math.random().toString(36).substr(2, 9), type: 'h2', data: { text: cleanHtmlText(el) } });
-      } else if (tag === 'h3') {
-        blocks.push({ id: Math.random().toString(36).substr(2, 9), type: 'h3', data: { text: cleanHtmlText(el) } });
-      } else if (tag === 'p') {
-        blocks.push({ id: Math.random().toString(36).substr(2, 9), type: 'paragraph', data: { text: cleanHtmlText(el) } });
-      } else if (tag === 'ul' || tag === 'ol') {
+      if (tag === 'h1' || tag === 'h2' || tag === 'h3') {
+        blocks.push({ id: Math.random().toString(36).substr(2, 9), type: tag as 'h1' | 'h2' | 'h3', data: { text: cleanHtmlText(el) } });
+        return;
+      }
+      
+      if (tag === 'img') {
+        const src = el.getAttribute('src') || '';
+        const alt = el.getAttribute('alt') || '';
+        blocks.push({ id: Math.random().toString(36).substr(2, 9), type: 'image', data: { url: src, alt, caption: alt } });
+        return;
+      }
+
+      if (tag === 'ul' || tag === 'ol') {
         const items = Array.from(el.querySelectorAll('li'));
         items.forEach(li => {
           blocks.push({ id: Math.random().toString(36).substr(2, 9), type: 'paragraph', data: { text: `• ${cleanHtmlText(li)}` } });
         });
-      } else if (tag === 'table') {
+        return;
+      }
+
+      if (tag === 'table') {
         const headers: string[] = [];
         const rows: string[][] = [];
         const ths = el.querySelectorAll('th');
@@ -988,12 +995,34 @@ export function parseHtmlToBlocks(html: string): Block[] {
             rows: headers.length > 0 ? rows : rows.slice(1)
           }
         });
-      } else if (tag === 'img') {
-        const src = el.getAttribute('src') || '';
-        const alt = el.getAttribute('alt') || '';
-        blocks.push({ id: Math.random().toString(36).substr(2, 9), type: 'image', data: { url: src, alt, caption: alt } });
-      } else if (tag === 'hr') {
+        return;
+      }
+
+      if (tag === 'hr') {
         blocks.push({ id: Math.random().toString(36).substr(2, 9), type: 'divider', data: {} });
+        return;
+      }
+
+      // Check if this container contains any images (direct or nested)
+      const hasImg = el.querySelector('img');
+      if (hasImg) {
+        // If there's an image, recurse into its child nodes individually to extract it
+        Array.from(el.childNodes).forEach(traverse);
+        return;
+      }
+
+      if (tag === 'p') {
+        const text = cleanHtmlText(el);
+        if (text) {
+          blocks.push({ id: Math.random().toString(36).substr(2, 9), type: 'paragraph', data: { text } });
+        }
+        return;
+      }
+
+      // For generic wrappers (div, figure, section, etc.)
+      const hasElements = Array.from(el.childNodes).some(n => n.nodeType === Node.ELEMENT_NODE);
+      if (hasElements) {
+        Array.from(el.childNodes).forEach(traverse);
       } else {
         const text = cleanHtmlText(el);
         if (text) {
@@ -1006,7 +1035,9 @@ export function parseHtmlToBlocks(html: string): Block[] {
         blocks.push({ id: Math.random().toString(36).substr(2, 9), type: 'paragraph', data: { text } });
       }
     }
-  }
+  };
+
+  children.forEach(traverse);
 
   return blocks.length > 0 ? blocks : [{ id: Math.random().toString(36).substr(2, 9), type: 'paragraph', data: { text: '' } }];
 }
