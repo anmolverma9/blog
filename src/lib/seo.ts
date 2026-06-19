@@ -90,6 +90,7 @@ export function generateArticleSchema(post: {
   updated_at?: string | Date;
   author_name: string;
   author_avatar_url?: string;
+  author_socials?: string[];
   featured_image_url?: string;
   category_name?: string;
 }, siteName?: string) {
@@ -107,11 +108,14 @@ export function generateArticleSchema(post: {
       '@type': 'Person',
       'name': post.author_name,
       'url': `${siteUrl}/authors/${authorSlug}`,
-      'image': post.author_avatar_url || undefined,
+      'image': post.author_avatar_url || `${siteUrl}/images/default-avatar.png`,
+      'sameAs': post.author_socials || [],
       'jobTitle': 'Author',
       'worksFor': {
         '@type': 'Organization',
         'name': siteName || 'Blog',
+        'url': siteUrl,
+        'description': `Official blog of ${siteName || 'Blog'}`,
       }
     },
     'publisher': {
@@ -134,10 +138,11 @@ export function generateArticleSchema(post: {
 /**
  * Generates JSON-LD schema markup for FAQs.
  */
-export function generateFAQSchema(items: Array<{ question: string; answer: string }>) {
+export function generateFAQSchema(items: Array<{ question: string; answer: string }>, title?: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
+    'description': title ? `Frequently Asked Questions about ${title}` : 'Frequently Asked Questions',
     'mainEntity': items.map(item => ({
       '@type': 'Question',
       'name': item.question,

@@ -362,6 +362,7 @@ const RENDERERS: Record<string, (data: any, allBlocks?: Block[]) => React.ReactN
         schemaMarkup = {
           '@context': 'https://schema.org',
           '@type': 'FAQPage',
+          'description': 'Frequently Asked Questions',
           'mainEntity': valid.map((item: any) => ({
             '@type': 'Question',
             'name': item.question,

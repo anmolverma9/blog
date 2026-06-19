@@ -68,6 +68,11 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
     ? (post.author_avatar_path.startsWith('http') ? post.author_avatar_path : `${siteUrl}${post.author_avatar_path}`)
     : undefined;
 
+  const authorSocials: string[] = [];
+  if (post.author_twitter) authorSocials.push(post.author_twitter);
+  if (post.author_facebook) authorSocials.push(post.author_facebook);
+  if (post.author_linkedin) authorSocials.push(post.author_linkedin);
+
   // Structured Data Schema markup
   const jsonLdSchema = generateArticleSchema({
     title: post.title,
@@ -77,6 +82,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
     updated_at: post.updated_at || undefined,
     author_name: post.author_name || `${siteName} Editor`,
     author_avatar_url: authorAvatarUrl,
+    author_socials: authorSocials,
     featured_image_url: post.featured_image_path || undefined,
     category_name: post.category_name || undefined,
   }, siteName);
@@ -88,7 +94,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
       const allFaqItems = faqBlocks.flatMap((b: any) => b.data.items || []);
       const validItems = allFaqItems.filter((item: any) => item.question && item.answer);
       if (validItems.length > 0) {
-        schemas.push(generateFAQSchema(validItems));
+        schemas.push(generateFAQSchema(validItems, post.title));
       }
     }
 

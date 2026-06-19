@@ -22,6 +22,9 @@ export interface Post {
   // Join fields
   author_name?: string;
   author_avatar_path?: string | null;
+  author_twitter?: string | null;
+  author_facebook?: string | null;
+  author_linkedin?: string | null;
   category_name?: string;
   category_slug?: string;
   featured_image_path?: string | null;
@@ -58,10 +61,12 @@ export interface FetchPostOptions {
 export class PostRepository {
   async findById(id: number): Promise<Post | null> {
     const [posts]: any = await pool.query(
-      `SELECT p.*, u.name as author_name, m.file_path as featured_image_path, c.name as category_name, c.slug as category_slug
+      `SELECT p.*, u.name as author_name, m.file_path as featured_image_path, c.name as category_name, c.slug as category_slug,
+              a.social_twitter as author_twitter, a.social_facebook as author_facebook, a.social_linkedin as author_linkedin, am.file_path as author_avatar_path
        FROM posts p
        JOIN authors a ON p.author_id = a.id
        JOIN users u ON a.user_id = u.id
+       LEFT JOIN media am ON a.avatar_id = am.id
        LEFT JOIN media m ON p.featured_image_id = m.id
        LEFT JOIN categories c ON p.category_id = c.id
        WHERE p.id = ?`,
@@ -79,7 +84,8 @@ export class PostRepository {
 
   async findBySlug(slug: string, lang: string = 'en'): Promise<Post | null> {
     const [posts]: any = await pool.query(
-      `SELECT p.*, u.name as author_name, m.file_path as featured_image_path, c.name as category_name, c.slug as category_slug, am.file_path as author_avatar_path
+      `SELECT p.*, u.name as author_name, m.file_path as featured_image_path, c.name as category_name, c.slug as category_slug, am.file_path as author_avatar_path,
+              a.social_twitter as author_twitter, a.social_facebook as author_facebook, a.social_linkedin as author_linkedin
        FROM posts p
        JOIN authors a ON p.author_id = a.id
        JOIN users u ON a.user_id = u.id
