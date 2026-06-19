@@ -131,6 +131,8 @@ export function generateArticleSchema(post: {
     'mainEntityOfPage': {
       '@type': 'WebPage',
       '@id': `${siteUrl}/${post.slug}`,
+      'name': post.title,
+      'description': post.summary || post.title,
     },
   };
 }
