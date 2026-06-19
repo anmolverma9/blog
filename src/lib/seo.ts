@@ -139,10 +139,12 @@ export function generateArticleSchema(post: {
  * Generates JSON-LD schema markup for FAQs.
  */
 export function generateFAQSchema(items: Array<{ question: string; answer: string }>, title?: string) {
+  const faqTitle = title ? `Frequently Asked Questions about ${title}` : 'Frequently Asked Questions';
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    'description': title ? `Frequently Asked Questions about ${title}` : 'Frequently Asked Questions',
+    'name': faqTitle,
+    'description': faqTitle,
     'mainEntity': items.map(item => ({
       '@type': 'Question',
       'name': item.question,
