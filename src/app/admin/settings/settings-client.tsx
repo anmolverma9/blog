@@ -18,6 +18,7 @@ export default function SettingsClient() {
   // Form states
   const [siteName, setSiteName] = useState('AppLuxe Custom Blog');
   const [siteLogo, setSiteLogo] = useState('');
+  const [siteDescription, setSiteDescription] = useState('');
   const [brandColor, setBrandColor] = useState('');
   const [gaId, setGaId] = useState('');
   const [headerScripts, setHeaderScripts] = useState('');
@@ -39,6 +40,7 @@ export default function SettingsClient() {
           const data = await res.json();
           if (data.site_name) setSiteName(data.site_name);
           if (data.site_logo) setSiteLogo(data.site_logo);
+          if (data.site_description) setSiteDescription(data.site_description);
           if (data.google_analytics_id) setGaId(data.google_analytics_id);
           if (data.header_scripts) setHeaderScripts(data.header_scripts);
           if (data.footer_scripts) setFooterScripts(data.footer_scripts);
@@ -118,6 +120,7 @@ export default function SettingsClient() {
         body: JSON.stringify({
           site_name: siteName,
           site_logo: siteLogo,
+          site_description: siteDescription,
           google_analytics_id: gaId,
           header_scripts: headerScripts,
           footer_scripts: footerScripts,
@@ -208,6 +211,16 @@ export default function SettingsClient() {
                     className="h-10 border-slate-200"
                     required
                   />
+                </div>
+                <div className="space-y-1.5 max-w-md">
+                  <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Site Tagline / Description</label>
+                  <Textarea
+                    value={siteDescription}
+                    onChange={(e) => setSiteDescription(e.target.value)}
+                    placeholder="Next generation advertising platform."
+                    className="h-16 border-slate-200"
+                  />
+                  <p className="text-[10px] text-slate-400">This tagline appears directly under the logo/title on the website header.</p>
                 </div>
                 <div className="space-y-1.5 max-w-md">
                   <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Site Logo URL</label>

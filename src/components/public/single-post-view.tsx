@@ -321,41 +321,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
           );
 
           // Helper comments section renderer
-          const renderCommentsSection = () => (
-            <div className="border border-slate-100 bg-white p-6 rounded-2xl space-y-4">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-1.5">
-                <MessageSquare className="h-4.5 w-4.5 text-orange-500" />
-                Comments Section
-              </h3>
-              <div className="space-y-3.5">
-                <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                  <p className="text-sm font-bold text-slate-800">Sarah Jenkins</p>
-                  <p className="text-slate-500 text-sm leading-normal">
-                    This is an incredibly detailed writeup! The repository architecture suggestion makes scaling the blog to marketplace modules look very clean.
-                  </p>
-                </div>
-                <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                  <p className="text-sm font-bold text-slate-800">David Miller</p>
-                  <p className="text-slate-500 text-sm leading-normal">
-                    Great tutorial on raw SQL pool queries in Next.js. The speed is significantly faster than Prisma overhead.
-                  </p>
-                </div>
-              </div>
-
-              {/* Form placeholder */}
-              <div className="space-y-3 pt-3 border-t border-slate-100">
-                <p className="text-sm font-bold text-slate-600">Leave a Reply</p>
-                <textarea
-                  placeholder="Write your comment here..."
-                  className="w-full text-sm p-3 rounded-lg border border-slate-200 focus:outline-none focus:border-orange-500 h-20"
-                  disabled
-                />
-                <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold h-8" disabled>
-                  Submit Comment (Future Release)
-                </Button>
-              </div>
-            </div>
-          );
+          const renderCommentsSection = () => null;
 
           if (postLayout === 'layout_b') {
             return (

@@ -99,7 +99,7 @@ export default function SubmitClient() {
       <MotionWrapper direction="up">
         <Card className="border-slate-200 shadow-lg bg-white overflow-hidden rounded-3xl">
           <div className="bg-slate-900 text-white p-8 relative">
-            <div className="absolute top-[-40%] right-[-10%] w-60 h-60 rounded-full bg-orange-500 blur-3xl opacity-35" />
+            <div className="absolute -top-[40%] -right-[10%] w-60 h-60 rounded-full bg-orange-500 blur-3xl opacity-35" />
             <div className="relative z-10 space-y-3">
               <span className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                 Community Publishing

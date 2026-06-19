@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Search, Menu, X, Bell, Zap } from 'lucide-react';
 
 interface NavbarProps {
@@ -24,9 +24,23 @@ export default function Navbar({
   breakingNewsTitle = 'Why Social Media Marketing Matters for Modern Business Growth'
 }: NavbarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [search, setSearch] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dateStr, setDateStr] = useState('');
+
+  const handleScrollToSubscribe = () => {
+    if (typeof window !== 'undefined') {
+      const el = document.getElementById('footer-newsletter-section');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        const input = document.getElementById('footer-newsletter-email');
+        if (input) {
+          setTimeout(() => input.focus(), 800);
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     const d = new Date();
@@ -46,18 +60,18 @@ export default function Navbar({
 
   const displayLinks = menuItems.length > 0 ? menuItems : [
     { label: 'Home', url: '/' },
-    { label: 'Business', url: '/posts?category=business' },
-    { label: 'Fashion', url: '/posts?category=fashion' },
-    { label: 'Food', url: '/posts?category=food' },
-    { label: 'Gadgets', url: '/posts?category=gadgets' },
-    { label: 'Health', url: '/posts?category=health' },
-    { label: 'Lifestyle', url: '/posts?category=lifestyle' },
-    { label: 'News', url: '/posts?category=news' },
-    { label: 'Sports', url: '/posts?category=sports' },
-    { label: 'Technology', url: '/posts?category=technology' },
-    { label: 'Entertainment', url: '/posts?category=entertainment' },
-    { label: 'Home Improvement', url: '/posts?category=home-improvement' },
-    { label: 'Digital Marketing', url: '/posts?category=digital-marketing' },
+    { label: 'Business', url: '/category/business' },
+    { label: 'Fashion', url: '/category/fashion' },
+    { label: 'Food', url: '/category/food' },
+    { label: 'Gadgets', url: '/category/gadgets' },
+    { label: 'Health', url: '/category/health' },
+    { label: 'Lifestyle', url: '/category/lifestyle' },
+    { label: 'News', url: '/category/news' },
+    { label: 'Sports', url: '/category/sports' },
+    { label: 'Technology', url: '/category/technology' },
+    { label: 'Entertainment', url: '/category/entertainment' },
+    { label: 'Home Improvement', url: '/category/home-improvement' },
+    { label: 'Digital Marketing', url: '/category/digital-marketing' },
   ];
 
   return (
@@ -125,16 +139,29 @@ export default function Navbar({
           
           {/* Centered Desktop Menu Links */}
           <div className="hidden lg:flex flex-1 justify-center items-center gap-5 text-xs font-bold text-slate-700 uppercase tracking-wider">
-            {displayLinks.map((link, idx) => (
-              <Link key={idx} href={link.url} className="hover:text-orange-600 transition-colors py-2">
-                {link.label}
-              </Link>
-            ))}
+            {displayLinks.map((link, idx) => {
+              const isActive = pathname === link.url;
+              return (
+                <Link
+                  key={idx}
+                  href={link.url}
+                  className={`transition-colors py-2 border-b-2 ${
+                    isActive ? 'text-orange-600 border-orange-600' : 'border-transparent hover:text-orange-600 text-slate-700'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Subscribe Button (Desktop) */}
           <div className="hidden lg:flex items-center gap-3">
-            <button className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/10 transition-all">
+            <button
+              type="button"
+              onClick={handleScrollToSubscribe}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/10 transition-all cursor-pointer"
+            >
               <Bell className="h-3.5 w-3.5 fill-current" />
               Subscribe
             </button>
@@ -184,17 +211,29 @@ export default function Navbar({
 
             {/* Links Mobile */}
             <div className="flex flex-col gap-3 font-semibold text-slate-700 text-sm uppercase tracking-wider">
-              {displayLinks.map((link, idx) => (
-                <Link
-                  key={idx}
-                  href={link.url}
-                  className="hover:text-orange-600 py-1"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <button className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg bg-orange-600 text-white font-bold mt-2">
+              {displayLinks.map((link, idx) => {
+                const isActive = pathname === link.url;
+                return (
+                  <Link
+                    key={idx}
+                    href={link.url}
+                    className={`transition-colors py-1 ${
+                      isActive ? 'text-orange-600 font-extrabold' : 'hover:text-orange-600 text-slate-700'
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setTimeout(handleScrollToSubscribe, 200);
+                }}
+                className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg bg-orange-600 text-white font-bold mt-2 cursor-pointer"
+              >
                 <Bell className="h-4 w-4 fill-current" />
                 Subscribe
               </button>

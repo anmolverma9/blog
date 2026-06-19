@@ -21,7 +21,8 @@ import {
   HelpCircle,
   Layers,
   CheckSquare,
-  Database
+  Database,
+  Mail
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -49,6 +50,7 @@ export default function Sidebar({ session, siteName = 'System', onMobileClose }:
     { label: 'Categories & Tags', href: '/admin/categories', icon: FolderOpen, show: hasPerm('manage_categories') },
     { label: 'Media Library', href: '/admin/media', icon: Image, show: hasPerm('manage_media') },
     { label: 'Users & Roles', href: '/admin/users', icon: Users, show: hasPerm('manage_users') },
+    { label: 'Subscribers', href: '/admin/subscribers', icon: Mail, show: !isSubscriber },
     { label: 'Navigation', href: '/admin/navigation', icon: Menu, show: hasPerm('manage_pages') },
     { label: '301 Redirects', href: '/admin/redirects', icon: Shuffle, show: hasPerm('manage_redirects') },
     { label: 'SEO Center', href: '/admin/seo', icon: Search, show: hasPerm('manage_seo') },

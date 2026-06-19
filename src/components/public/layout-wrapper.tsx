@@ -14,7 +14,7 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
   const settings = await settingsService.getSettings();
   const siteName = settings.site_name || 'Blog';
   const siteLogo = settings.site_logo || '';
-  const siteDescription = settings.site_description || 'The latest tech news about the world\'s best...';
+  const siteDescription = settings.site_description || 'Next generation advertising platform.';
   const gaId = settings.google_analytics_id || '';
   const headerScripts = settings.header_scripts || '';
   const footerScripts = settings.footer_scripts || '';

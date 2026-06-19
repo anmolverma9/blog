@@ -107,7 +107,7 @@ export default async function Sidebar({ categories, recentPosts }: SidebarProps)
               .map((cat) => (
                 <Link
                   key={cat.id ?? cat.slug}
-                  href={`/posts?category=${cat.slug}`}
+                  href={`/category/${cat.slug}`}
                   className="flex items-center gap-2.5 text-sm font-bold text-slate-700 hover:text-orange-600 transition-colors py-2.5 border-b border-slate-50 last:border-0"
                 >
                   <LayoutGrid className="h-4 w-4 text-slate-400" />

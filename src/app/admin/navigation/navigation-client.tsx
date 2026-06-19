@@ -128,7 +128,7 @@ export default function NavigationClient() {
       const cat = categories.find(c => String(c.id) === selectedCategoryId);
       if (!cat) return;
       label = cat.name;
-      url = `/posts?category=${cat.slug}`;
+      url = `/category/${cat.slug}`;
     } else if (linkType === 'tag') {
       const tagItem = tags.find(t => String(t.id) === selectedTagId);
       if (!tagItem) return;
@@ -473,9 +473,9 @@ export default function NavigationClient() {
                         {/* Drag indicator icon placeholder & source tag */}
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-100/60 shrink-0 text-slate-400">
-                            {item.url.startsWith('/posts?category') && <FolderOpen className="h-4 w-4 text-emerald-500" />}
+                            {(item.url.startsWith('/posts?category') || item.url.startsWith('/category')) && <FolderOpen className="h-4 w-4 text-emerald-500" />}
                             {item.url.startsWith('/posts?tag') && <Tag className="h-4 w-4 text-purple-500" />}
-                            {!item.url.startsWith('/posts?category') && !item.url.startsWith('/posts?tag') && item.url !== '/' && item.url !== '/posts' && item.url !== '/admin' && <File className="h-4 w-4 text-orange-500" />}
+                            {!item.url.startsWith('/posts?category') && !item.url.startsWith('/category') && !item.url.startsWith('/posts?tag') && item.url !== '/' && item.url !== '/posts' && item.url !== '/admin' && <File className="h-4 w-4 text-orange-500" />}
                             {(item.url === '/' || item.url === '/posts' || item.url === '/admin') && <Compass className="h-4 w-4 text-sky-500" />}
                           </div>
 

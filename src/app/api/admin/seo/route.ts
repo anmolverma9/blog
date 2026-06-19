@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       settings: {
         site_title: settings.site_title || 'AppLuxe CMS Platform',
-        site_description: settings.site_description || 'Next generation SaaS content platform.',
+        site_description: settings.site_description || 'Next generation advertising platform.',
         default_meta_title: settings.default_meta_title || '',
         default_meta_description: settings.default_meta_description || '',
         meta_robots_indexing: settings.meta_robots_indexing || 'index, follow',

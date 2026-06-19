@@ -48,8 +48,8 @@ export default function LoginClient({ siteName = 'System' }: LoginClientProps) {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Decorative Background Elements */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-orange-100 blur-[120px] opacity-60 pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-slate-200 blur-[120px] opacity-60 pointer-events-none" />
+      <div className="absolute -top-[20%] -left-[10%] w-[500px] h-[500px] rounded-full bg-orange-100 blur-[120px] opacity-60 pointer-events-none" />
+      <div className="absolute -bottom-[20%] -right-[10%] w-[500px] h-[500px] rounded-full bg-slate-200 blur-[120px] opacity-60 pointer-events-none" />
 
       <Card className="w-full max-w-md shadow-xl border-slate-200/80 backdrop-blur-sm bg-white/95 relative z-10">
         <CardHeader className="space-y-1 text-center pt-8 pb-6">

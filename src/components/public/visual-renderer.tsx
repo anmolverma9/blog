@@ -338,7 +338,7 @@ function renderPublicWidget(widget: Widget) {
       return <PublicContactForm />;
 
     case 'comments':
-      return <PublicCommentsPreview />;
+      return null;
 
     case 'custom_html':
       return <div dangerouslySetInnerHTML={{ __html: data.code || '' }} />;

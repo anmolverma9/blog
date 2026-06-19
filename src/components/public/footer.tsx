@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { ArrowUp } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowUp, Mail, Check, AlertCircle, Loader2 } from 'lucide-react';
 
 interface FooterProps {
   siteName?: string;
@@ -14,9 +14,42 @@ export default function Footer({
   siteLogo = '',
   siteDescription = 'The latest tech news about the world\'s best...'
 }: FooterProps) {
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+
   const scrollToTop = () => {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, sourcePage: 'footer' }),
+      });
+
+      if (res.ok) {
+        setSuccess(true);
+        setEmail('');
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to subscribe');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -24,11 +57,11 @@ export default function Footer({
     <footer className="bg-[#0f172a] text-slate-400 py-12 border-t border-slate-800">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Top Section */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8">
+        {/* Top Section - 3 Column Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 items-start">
           
-          {/* Left: Brand Logo & Tagline */}
-          <div className="text-center md:text-left space-y-2 max-w-md">
+          {/* Left Column: Brand Logo & Tagline */}
+          <div className="text-center md:text-left space-y-2">
             {siteLogo ? (
               <img src={siteLogo} alt={siteName} className="h-12 md:h-14 object-contain mx-auto md:mx-0 mb-3" />
             ) : (
@@ -36,13 +69,62 @@ export default function Footer({
                 {siteName}
               </h2>
             )}
-            <p className="text-slate-500 text-xs sm:text-sm font-medium leading-relaxed">
+            <p className="text-slate-500 text-xs sm:text-sm font-medium leading-relaxed max-w-sm">
               {siteDescription}
             </p>
           </div>
 
-          {/* Right: Social Media Icons in Circles */}
-          <div className="flex items-center gap-3">
+          {/* Middle Column: Newsletter Form */}
+          <div className="space-y-3.5" id="footer-newsletter-section">
+            <h3 className="text-white text-sm font-bold uppercase tracking-wider text-center md:text-left">
+              Subscribe to Newsletter
+            </h3>
+            {success ? (
+              <div className="bg-emerald-950/40 border border-emerald-900 rounded-2xl p-4 text-center space-y-2 text-emerald-400 animate-in zoom-in-95 duration-150">
+                <div className="mx-auto w-8 h-8 bg-emerald-900 text-emerald-400 rounded-full flex items-center justify-center">
+                  <Check className="h-4 w-4" />
+                </div>
+                <p className="text-xs font-bold">Successfully Subscribed!</p>
+                <p className="text-[10px] text-emerald-500 leading-normal">
+                  Thanks for subscribing to our advertising and publishing updates.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribe} className="space-y-2.5">
+                {error && (
+                  <div className="bg-rose-950/40 border border-rose-900 text-rose-400 text-[10px] p-2 rounded-lg flex items-center gap-1.5">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                    <input
+                      type="email"
+                      id="footer-newsletter-email"
+                      placeholder="Enter your email address..."
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-700 bg-slate-900 text-slate-200 text-xs focus:outline-none focus:border-orange-500 transition-colors"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="h-10 px-5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/10 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                    Subscribe
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+
+          {/* Right Column: Social Media Icons in Circles */}
+          <div className="flex items-center justify-center md:justify-end gap-3 self-center md:self-start">
             <a
               href="#"
               className="w-9 h-9 rounded-full bg-slate-800 hover:bg-orange-600 hover:text-white transition-all duration-150 flex items-center justify-center text-slate-300"

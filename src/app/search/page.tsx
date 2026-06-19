@@ -39,7 +39,7 @@ export default async function SearchResultsPage({ searchParams }: SearchPageProp
       <div className="editorial-container py-10 space-y-8 animate-in fade-in duration-300">
         {/* Banner */}
         <div className="bg-slate-900 rounded-2xl p-6 md:p-8 text-white relative overflow-hidden shadow-sm">
-          <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-orange-500 rounded-full blur-3xl opacity-20" />
+          <div className="absolute -top-[20%] -right-[10%] w-64 h-64 bg-orange-500 rounded-full blur-3xl opacity-20" />
           <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest">Search Results Workspace</span>
           <h1 className="text-2xl font-bold mt-1">
             {query ? `Search Results for: "${query}"` : 'Please enter a search query'}

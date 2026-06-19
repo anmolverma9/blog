@@ -572,7 +572,7 @@ export default function BlockEditor({ initialBlocks = [], onChange, postId = 'ne
               className="group relative flex items-start gap-2 border border-transparent hover:border-slate-100 rounded-xl p-1.5 transition-all"
             >
               {/* Left drag handle and quick arrow reorders */}
-              <div className="absolute left-[-45px] top-1/2 translate-y-[-50%] opacity-0 group-hover:opacity-100 flex items-center gap-0.5 bg-white border shadow-sm rounded-lg p-1 z-10">
+              <div className="absolute -left-24 top-1/2 translate-y-[-50%] opacity-0 group-hover:opacity-100 flex items-center gap-0.5 bg-white border shadow-sm rounded-lg p-1 z-10">
                 <button
                   type="button"
                   onClick={() => moveBlock(idx, 'up')}
@@ -614,7 +614,7 @@ export default function BlockEditor({ initialBlocks = [], onChange, postId = 'ne
               </div>
 
               {/* Quick block insert trigger */}
-              <div className="absolute right-[-35px] top-1/2 translate-y-[-50%] opacity-0 group-hover:opacity-100 z-10">
+              <div className="absolute -right-10 top-1/2 translate-y-[-50%] opacity-0 group-hover:opacity-100 z-10">
                 <button
                   type="button"
                   onClick={() => addBlock('paragraph', idx)}

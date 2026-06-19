@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   const siteTitle = settings.site_name || settings.site_title || 'Blog';
-  const siteDescription = settings.site_description || 'Next generation SaaS content platform.';
+  const siteDescription = settings.site_description || 'Next generation advertising platform.';
   const defaultMetaTitle = settings.default_meta_title || siteTitle;
   const defaultMetaDescription = settings.default_meta_description || siteDescription;
   const robotsSettings = settings.meta_robots_indexing || 'index, follow';
