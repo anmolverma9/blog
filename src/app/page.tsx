@@ -132,7 +132,7 @@ export default async function Homepage({ searchParams }: PageProps) {
             <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider border-b border-slate-50 pb-2">
               Trending Stories
             </h4>
-            <div className="flex-1 flex flex-col justify-between gap-4">
+            <div className="flex-1 flex flex-col justify-start gap-4">
               {rightListPosts.length === 0 ? (
                 <p className="text-slate-400 text-sm italic">No items found</p>
               ) : (
