@@ -7,6 +7,8 @@ import { generateArticleSchema, generateFAQSchema, generateReviewSchema, generat
 import { Button, buttonVariants } from '@/components/ui/button';
 import BlocksRenderer from '@/components/public/blocks-renderer';
 import VisualRenderer from '@/components/public/visual-renderer';
+import { parseInlineMarkdown } from '@/lib/markdown';
+import OnThisPage from '@/components/public/on-this-page';
 import {
   Clock,
   Eye,
@@ -165,7 +167,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
                       .replace(/-+/g, '-');
                     return (
                       <h2 key={idx} id={id} className="text-xl font-bold text-slate-900 pt-4 mt-6 border-b pb-1.5 scroll-mt-20">
-                        {text}
+                        {parseInlineMarkdown(text)}
                       </h2>
                     );
                   }
@@ -173,7 +175,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
                     const text = para.replace('### ', '');
                     return (
                       <h3 key={idx} className="text-base font-bold text-slate-900 pt-2 mt-4">
-                        {text}
+                        {parseInlineMarkdown(text)}
                       </h3>
                     );
                   }
@@ -196,7 +198,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
                     );
                   }
 
-                  return <p key={idx} className="leading-normal font-normal text-[20px] text-black tracking-[-0.03em] mb-8 whitespace-pre-wrap">{para}</p>;
+                  return <p key={idx} className="leading-normal font-normal text-[20px] text-black tracking-[-0.03em] mb-8 whitespace-pre-wrap">{parseInlineMarkdown(para)}</p>;
                 })}
               </div>
             );
@@ -414,9 +416,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
 
           return (
             <div className="editorial-container py-10 animate-in fade-in duration-300">
-              <div className="bg-slate-100/80 border text-xs font-semibold text-slate-400 py-3 text-center rounded-2xl mb-8 tracking-wider uppercase">
-                Advertisement Block
-              </div>
+
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 <div className="lg:col-span-2 space-y-8">
@@ -448,26 +448,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    {headings.length > 0 && (
-                      <div className="hidden md:block md:col-span-1 space-y-4 h-fit sticky top-20">
-                        <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1">
-                          <TrendingUp className="h-3.5 w-3.5 text-orange-500" />
-                          On This Page
-                        </h4>
-                        <ul className="space-y-2 text-sm font-semibold text-slate-500 border-l border-slate-100 pl-3">
-                          {headings.map((heading, idx) => (
-                            <li key={idx}>
-                              <a
-                                href={`#${heading.id}`}
-                                className="hover:text-orange-500 block transition-colors py-0.5"
-                              >
-                                {heading.text}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                    <OnThisPage headings={headings} />
 
                     <div className={`${headings.length > 0 ? 'md:col-span-3' : 'md:col-span-4'} prose prose-slate lg:prose-lg max-w-none text-slate-700 leading-relaxed text-base`}>
                       {renderContentBody()}

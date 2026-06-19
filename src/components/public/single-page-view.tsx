@@ -1,5 +1,6 @@
 import React from 'react';
 import VisualRenderer from '@/components/public/visual-renderer';
+import { parseInlineMarkdown } from '@/lib/markdown';
 
 interface SinglePageViewProps {
   page: any;
@@ -26,7 +27,7 @@ export default function SinglePageView({ page }: SinglePageViewProps) {
             </div>
           </div>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 prose prose-slate text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
-            {page.content}
+            {parseInlineMarkdown(page.content)}
           </div>
         </div>
       )}
@@ -37,7 +38,7 @@ export default function SinglePageView({ page }: SinglePageViewProps) {
           <h1 className="text-3xl font-extrabold text-slate-950 tracking-tight">{page.title}</h1>
           <div className="h-px bg-slate-100" />
           <div className="prose prose-slate max-w-none text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
-            {page.content}
+            {parseInlineMarkdown(page.content)}
           </div>
         </div>
       )}
@@ -50,7 +51,7 @@ export default function SinglePageView({ page }: SinglePageViewProps) {
           </h1>
           <div className="h-px bg-slate-100" />
           <div className="prose prose-slate max-w-none text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
-            {page.content}
+            {parseInlineMarkdown(page.content)}
           </div>
         </div>
       )}

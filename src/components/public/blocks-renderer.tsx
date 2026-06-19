@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CheckCircle, AlertCircle, Info, HelpCircle, Star, ThumbsUp, ThumbsDown,
   ArrowRight, ExternalLink, Play, Check, ChevronDown, ChevronUp, Copy,
   User, List
 } from 'lucide-react';
+import { parseInlineMarkdown } from '@/lib/markdown';
 
 interface Block {
   id: string;
@@ -40,27 +41,36 @@ export default function BlocksRenderer({ blocks }: BlocksRendererProps) {
 const RENDERERS: Record<string, (data: any, allBlocks?: Block[]) => React.ReactNode> = {
   paragraph: (data) => (
     <p className="leading-normal font-normal text-[20px] text-black tracking-[-0.03em] mb-8 whitespace-pre-wrap">
-      {data.text}
+      {parseInlineMarkdown(data.text)}
     </p>
   ),
 
-  h1: (data) => (
-    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 mt-8 mb-4">
-      {data.text}
-    </h1>
-  ),
+  h1: (data) => {
+    const id = getHeadingId(data.text);
+    return (
+      <h1 id={id} className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 mt-8 mb-4 scroll-mt-20">
+        {parseInlineMarkdown(data.text)}
+      </h1>
+    );
+  },
 
-  h2: (data) => (
-    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mt-6 mb-3 border-b pb-2">
-      {data.text}
-    </h2>
-  ),
+  h2: (data) => {
+    const id = getHeadingId(data.text);
+    return (
+      <h2 id={id} className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mt-6 mb-3 border-b pb-2 scroll-mt-20">
+        {parseInlineMarkdown(data.text)}
+      </h2>
+    );
+  },
 
-  h3: (data) => (
-    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mt-4 mb-2">
-      {data.text}
-    </h3>
-  ),
+  h3: (data) => {
+    const id = getHeadingId(data.text);
+    return (
+      <h3 id={id} className="text-xl sm:text-2xl font-bold text-slate-900 mt-4 mb-2 scroll-mt-20">
+        {parseInlineMarkdown(data.text)}
+      </h3>
+    );
+  },
 
   image: (data) => (
     <figure className="my-6 text-center space-y-2">
@@ -154,8 +164,8 @@ const RENDERERS: Record<string, (data: any, allBlocks?: Block[]) => React.ReactN
       <div className={`border-l-4 p-5 rounded-r-2xl my-6 flex items-start gap-3.5 shadow-sm ${config.bg}`}>
         <Icon className="h-5 w-5 shrink-0 mt-0.5" />
         <div className="space-y-1 text-sm sm:text-base">
-          {data.title && <p className="font-bold leading-tight">{data.title}</p>}
-          <p className="leading-relaxed opacity-95">{data.text}</p>
+          {data.title && <p className="font-bold leading-tight">{parseInlineMarkdown(data.title)}</p>}
+          <p className="leading-relaxed opacity-95">{parseInlineMarkdown(data.text)}</p>
         </div>
       </div>
     );
@@ -201,7 +211,7 @@ const RENDERERS: Record<string, (data: any, allBlocks?: Block[]) => React.ReactN
             <tr key={rIdx} className="hover:bg-slate-50/50 transition-colors">
               {row.map((cell: string, cIdx: number) => (
                 <td key={cIdx} className="px-5 py-3 text-slate-600 leading-normal">
-                  {cell}
+                  {parseInlineMarkdown(cell)}
                 </td>
               ))}
             </tr>
@@ -225,7 +235,7 @@ const RENDERERS: Record<string, (data: any, allBlocks?: Block[]) => React.ReactN
           <span className="text-sm font-extrabold text-amber-800">{data.rating} / {data.ratingMax}</span>
         </div>
       </div>
-      <p className="text-sm sm:text-base text-slate-600 leading-relaxed italic whitespace-pre-wrap">{data.summary}</p>
+      <p className="text-sm sm:text-base text-slate-600 leading-relaxed italic whitespace-pre-wrap">{parseInlineMarkdown(data.summary)}</p>
       {data.buyUrl && (
         <a
           href={data.buyUrl}
@@ -250,7 +260,7 @@ const RENDERERS: Record<string, (data: any, allBlocks?: Block[]) => React.ReactN
           {(data.pros || []).filter(Boolean).map((pro: string, idx: number) => (
             <li key={idx} className="flex items-start gap-2.5 leading-normal">
               <span className="text-emerald-500 font-extrabold mt-0.5 shrink-0">✓</span>
-              <span>{pro}</span>
+              <span>{parseInlineMarkdown(pro)}</span>
             </li>
           ))}
         </ul>
@@ -265,7 +275,7 @@ const RENDERERS: Record<string, (data: any, allBlocks?: Block[]) => React.ReactN
           {(data.cons || []).filter(Boolean).map((con: string, idx: number) => (
             <li key={idx} className="flex items-start gap-2.5 leading-normal">
               <span className="text-rose-500 font-extrabold mt-0.5 shrink-0">✗</span>
-              <span>{con}</span>
+              <span>{parseInlineMarkdown(con)}</span>
             </li>
           ))}
         </ul>
@@ -298,7 +308,7 @@ const RENDERERS: Record<string, (data: any, allBlocks?: Block[]) => React.ReactN
                   ) : cell === '✗' ? (
                     <span className="text-rose-500 font-extrabold">✗</span>
                   ) : (
-                    cell
+                    parseInlineMarkdown(cell)
                   )}
                 </td>
               ))}
@@ -335,32 +345,13 @@ const RENDERERS: Record<string, (data: any, allBlocks?: Block[]) => React.ReactN
       .filter((b: any) => b.type === 'h2' || b.type === 'h3')
       .map((b: any) => {
         const text = b.data.text || '';
-        const id = text
-          .toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-');
+        const id = getHeadingId(text);
         return { text, id, type: b.type };
       });
 
     if (headings.length === 0) return null;
 
-    return (
-      <div className="border border-slate-200/80 rounded-2xl p-5 my-6 bg-slate-50/50 shadow-sm">
-        <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest mb-3.5 flex items-center gap-1.5">
-          <List className="h-4 w-4 text-orange-500" /> Table of Contents
-        </h4>
-        <ul className="space-y-2 text-sm text-slate-600 font-semibold pl-2">
-          {headings.map((h, i) => (
-            <li key={i} className={h.type === 'h3' ? 'pl-4' : ''}>
-              <a href={`#${h.id}`} className="hover:text-orange-500 hover:underline transition-colors block py-0.5">
-                {h.text}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
+    return <TableOfContents headings={headings} />;
   },
 
   schema: (data) => {
@@ -439,7 +430,7 @@ function FAQAccordion({ question, answer }: { question: string; answer: string }
         onClick={() => setOpen(!open)}
         className="w-full text-left px-5 py-4 font-bold text-slate-800 hover:text-orange-500 flex items-center justify-between transition-colors gap-4 text-sm sm:text-base focus:outline-none"
       >
-        <span>{question}</span>
+        <span>{parseInlineMarkdown(question)}</span>
         {open ? (
           <ChevronUp className="h-4.5 w-4.5 text-slate-400 shrink-0" />
         ) : (
@@ -448,7 +439,7 @@ function FAQAccordion({ question, answer }: { question: string; answer: string }
       </button>
       {open && (
         <div className="px-5 pb-4 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3.5 whitespace-pre-wrap animate-in fade-in duration-200">
-          {answer}
+          {parseInlineMarkdown(answer)}
         </div>
       )}
     </div>
@@ -491,4 +482,74 @@ function CodeHighlightBlock({ code, language }: { code: string; language: string
       </pre>
     </div>
   );
+}
+
+// Active Highlight Table of Contents Component
+function TableOfContents({ headings }: { headings: Array<{ text: string; id: string; type: string }> }) {
+  const [activeId, setActiveId] = useState<string>('');
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 120; // Offset for sticky headers/navbar
+      
+      let currentActiveId = '';
+      for (const h of headings) {
+        const el = document.getElementById(h.id);
+        if (el) {
+          const top = el.getBoundingClientRect().top + window.scrollY;
+          if (scrollPosition >= top) {
+            currentActiveId = h.id;
+          } else {
+            break;
+          }
+        }
+      }
+      
+      if (window.scrollY < 100 && headings.length > 0) {
+        setActiveId(headings[0].id);
+      } else if (currentActiveId) {
+        setActiveId(currentActiveId);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [headings]);
+
+  return (
+    <div className="border border-slate-200/80 rounded-2xl p-5 my-6 bg-slate-50/50 shadow-sm">
+      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest mb-3.5 flex items-center gap-1.5">
+        <List className="h-4 w-4 text-orange-500" /> Table of Contents
+      </h4>
+      <ul className="space-y-2 text-sm text-slate-500 font-semibold pl-2">
+        {headings.map((h, i) => {
+          const isActive = activeId === h.id;
+          return (
+            <li key={i} className={h.type === 'h3' ? 'pl-4' : ''}>
+              <a
+                href={`#${h.id}`}
+                className={`transition-colors block py-0.5 leading-snug ${
+                  isActive
+                    ? 'text-orange-600 font-bold border-l-2 border-orange-500 pl-2 -ml-2.5'
+                    : 'hover:text-orange-500'
+                }`}
+              >
+                {parseInlineMarkdown(h.text)}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function getHeadingId(text: string): string {
+  return (text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
 }
