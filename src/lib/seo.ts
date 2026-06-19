@@ -197,6 +197,7 @@ export function generateBreadcrumbSchema(links: Array<{ name: string; url: strin
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    'description': 'Breadcrumb navigation path',
     'itemListElement': links.map((link, idx) => ({
       '@type': 'ListItem',
       'position': idx + 1,
