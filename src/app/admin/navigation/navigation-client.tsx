@@ -53,6 +53,8 @@ export default function NavigationClient() {
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  const [selectedMenuSlug, setSelectedMenuSlug] = useState<'header' | 'footer_quick_links' | 'footer_legal'>('header');
+
   // Data states
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [pages, setPages] = useState<PageItem[]>([]);
@@ -73,21 +75,16 @@ export default function NavigationClient() {
   const [editLabel, setEditLabel] = useState('');
   const [editUrl, setEditUrl] = useState('');
 
-  // Fetch all resources
+  // Fetch static resources once on mount
   useEffect(() => {
-    async function loadData() {
+    async function loadResources() {
       try {
-        const [menuRes, pagesRes, catsRes, tagsRes] = await Promise.all([
-          fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/menus?slug=header'),
+        const [pagesRes, catsRes, tagsRes] = await Promise.all([
           fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/pages'),
           fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/categories'),
           fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/tags')
         ]);
 
-        if (menuRes.ok) {
-          const menuData = await menuRes.json();
-          setMenuItems(menuData.items || []);
-        }
         if (pagesRes.ok) {
           const pagesData = await pagesRes.json();
           // Filter to only allow published pages to be easily linked
@@ -100,13 +97,32 @@ export default function NavigationClient() {
           setTags(await tagsRes.json());
         }
       } catch (err) {
-        console.error('Failed to load menu or resource lists:', err);
+        console.error('Failed to load resources:', err);
+      }
+    }
+    loadResources();
+  }, []);
+
+  // Fetch menu whenever the selected slug changes
+  useEffect(() => {
+    async function loadMenu() {
+      setLoading(true);
+      try {
+        const menuRes = await fetch(
+          (process.env.NEXT_PUBLIC_APP_URL || '') + `/api/admin/menus?slug=${selectedMenuSlug}`
+        );
+        if (menuRes.ok) {
+          const menuData = await menuRes.json();
+          setMenuItems(menuData.items || []);
+        }
+      } catch (err) {
+        console.error('Failed to load menu:', err);
       } finally {
         setLoading(false);
       }
     }
-    loadData();
-  }, []);
+    loadMenu();
+  }, [selectedMenuSlug]);
 
   // Handle Adding Item
   const handleAddItem = (e: React.FormEvent) => {
@@ -224,13 +240,20 @@ export default function NavigationClient() {
     setSaving(true);
     setSavedSuccess(false);
 
+    const menuName =
+      selectedMenuSlug === 'header'
+        ? 'Header Menu'
+        : selectedMenuSlug === 'footer_quick_links'
+        ? 'Footer Quick Links'
+        : 'Footer Legal Links';
+
     try {
       const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/menus', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: 'Header Menu',
-          slug: 'header',
+          name: menuName,
+          slug: selectedMenuSlug,
           items: menuItems
         }),
       });
@@ -239,7 +262,7 @@ export default function NavigationClient() {
         setSavedSuccess(true);
         setTimeout(() => setSavedSuccess(false), 3000);
       } else {
-        alert('Failed to save header navigation menu');
+        alert(`Failed to save ${menuName}`);
       }
     } catch (err) {
       console.error('Save menu error:', err);
@@ -258,11 +281,52 @@ export default function NavigationClient() {
     );
   }
 
+  const currentMenuName =
+    selectedMenuSlug === 'header'
+      ? 'Header Menu'
+      : selectedMenuSlug === 'footer_quick_links'
+      ? 'Footer Quick Links'
+      : 'Footer Legal Links';
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div>
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Navigation Configuration</h1>
-        <p className="text-slate-500 mt-1">Dynamically manage links, labels, and order for the main website header menu.</p>
+        <p className="text-slate-500 mt-1">Dynamically manage links, labels, and order for the header and footer navigation menus.</p>
+      </div>
+
+      {/* Tabs for Menu Selection */}
+      <div className="flex flex-wrap gap-2 border-b pb-2">
+        <button
+          onClick={() => setSelectedMenuSlug('header')}
+          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all cursor-pointer ${
+            selectedMenuSlug === 'header'
+              ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/15'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          Header Menu
+        </button>
+        <button
+          onClick={() => setSelectedMenuSlug('footer_quick_links')}
+          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all cursor-pointer ${
+            selectedMenuSlug === 'footer_quick_links'
+              ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/15'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          Footer Quick Links
+        </button>
+        <button
+          onClick={() => setSelectedMenuSlug('footer_legal')}
+          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all cursor-pointer ${
+            selectedMenuSlug === 'footer_legal'
+              ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/15'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          Footer Legal Links
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -275,7 +339,7 @@ export default function NavigationClient() {
                 <Plus className="h-5 w-5 text-orange-500" />
                 Add Link Item
               </CardTitle>
-              <CardDescription>Select the link source and specify navigation labels.</CardDescription>
+              <CardDescription>Add links to the {currentMenuName}.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleAddItem} className="space-y-4">
@@ -447,7 +511,7 @@ export default function NavigationClient() {
                 <Compass className="h-5 w-5 text-orange-500" />
                 Menu Structure
               </CardTitle>
-              <CardDescription>Drag, reorder, and refine current header items.</CardDescription>
+              <CardDescription>Reorder and refine links in the {currentMenuName}.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               
@@ -589,7 +653,7 @@ export default function NavigationClient() {
                 {savedSuccess && (
                   <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-semibold animate-in fade-in duration-300">
                     <CheckCircle className="h-4 w-4" />
-                    Header menu published!
+                    {currentMenuName} published!
                   </div>
                 )}
               </div>

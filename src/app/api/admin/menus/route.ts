@@ -16,7 +16,13 @@ export async function GET(req: NextRequest) {
     if (!menu) {
       // Return a blank template menu for this slug if not found yet
       return NextResponse.json({
-        name: slug === 'header' ? 'Header Menu' : slug,
+        name: slug === 'header'
+          ? 'Header Menu'
+          : slug === 'footer_quick_links'
+          ? 'Footer Quick Links'
+          : slug === 'footer_legal'
+          ? 'Footer Legal Links'
+          : slug,
         slug,
         items: []
       });

@@ -7,12 +7,16 @@ interface FooterProps {
   siteName?: string;
   siteLogo?: string;
   siteDescription?: string;
+  quickLinks?: any[];
+  legalLinks?: any[];
 }
 
 export default function Footer({
   siteName = 'Tech Giant World',
   siteLogo = '',
-  siteDescription = 'The latest tech news about the world\'s best...'
+  siteDescription = 'The latest tech news about the world\'s best...',
+  quickLinks = [],
+  legalLinks = []
 }: FooterProps) {
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -80,21 +84,33 @@ export default function Footer({
               Quick Links
             </h3>
             <ul className="space-y-2 text-xs sm:text-sm font-medium">
-              <li>
-                <a href="/" className="hover:text-orange-500 transition-colors">Home</a>
-              </li>
-              <li>
-                <a href="/posts" className="hover:text-orange-500 transition-colors">All Posts</a>
-              </li>
-              <li>
-                <a href="/posts/submit" className="hover:text-orange-500 transition-colors">Submit Guest Post</a>
-              </li>
-              <li>
-                <a href="/archives" className="hover:text-orange-500 transition-colors">Archives</a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-orange-500 transition-colors">About Us</a>
-              </li>
+              {quickLinks && quickLinks.length > 0 ? (
+                quickLinks.map((item, idx) => (
+                  <li key={idx}>
+                    <a href={item.url} className="hover:text-orange-500 transition-colors">
+                      {item.label}
+                    </a>
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li>
+                    <a href="/" className="hover:text-orange-500 transition-colors">Home</a>
+                  </li>
+                  <li>
+                    <a href="/posts" className="hover:text-orange-500 transition-colors">All Posts</a>
+                  </li>
+                  <li>
+                    <a href="/posts/submit" className="hover:text-orange-500 transition-colors">Submit Guest Post</a>
+                  </li>
+                  <li>
+                    <a href="/archives" className="hover:text-orange-500 transition-colors">Archives</a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-orange-500 transition-colors">About Us</a>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 
@@ -104,21 +120,33 @@ export default function Footer({
               Legal & Privacy
             </h3>
             <ul className="space-y-2 text-xs sm:text-sm font-medium">
-              <li>
-                <a href="#" className="hover:text-orange-500 transition-colors">Privacy Policy</a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-orange-500 transition-colors">Terms of Service</a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-orange-500 transition-colors">DMCA Notice</a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-orange-500 transition-colors">Disclaimer</a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-orange-500 transition-colors">Contact Support</a>
-              </li>
+              {legalLinks && legalLinks.length > 0 ? (
+                legalLinks.map((item, idx) => (
+                  <li key={idx}>
+                    <a href={item.url} className="hover:text-orange-500 transition-colors">
+                      {item.label}
+                    </a>
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li>
+                    <a href="#" className="hover:text-orange-500 transition-colors">Privacy Policy</a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-orange-500 transition-colors">Terms of Service</a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-orange-500 transition-colors">DMCA Notice</a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-orange-500 transition-colors">Disclaimer</a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-orange-500 transition-colors">Contact Support</a>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 

@@ -19,9 +19,15 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
   const headerScripts = settings.header_scripts || '';
   const footerScripts = settings.footer_scripts || '';
 
-  // Load header menu dynamically
+  // Load dynamic menus
   const headerMenu = await menuService.getMenuBySlug('header');
   const menuItems = headerMenu?.items || [];
+
+  const footerQuickMenu = await menuService.getMenuBySlug('footer_quick_links');
+  const footerQuickItems = footerQuickMenu?.items || [];
+
+  const footerLegalMenu = await menuService.getMenuBySlug('footer_legal');
+  const footerLegalItems = footerLegalMenu?.items || [];
 
   // Fetch latest post for breaking news ticker
   let breakingNewsTitle = 'Why Social Media Marketing Matters for Modern Business Growth';
@@ -73,7 +79,13 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
       </div>
 
       {/* Footer Banner */}
-      <Footer siteName={siteName} siteLogo={siteLogo} siteDescription={siteDescription} />
+      <Footer 
+        siteName={siteName} 
+        siteLogo={siteLogo} 
+        siteDescription={siteDescription} 
+        quickLinks={footerQuickItems}
+        legalLinks={footerLegalItems}
+      />
 
       {/* 2. Footer Scripts Injections */}
       {footerScripts && (
