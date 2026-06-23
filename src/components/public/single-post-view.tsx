@@ -242,6 +242,19 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
             </div>
           );
 
+          // Helper featured video player renderer
+          const renderFeaturedVideo = () => (
+            <div className="bg-slate-50 border border-slate-200/60 rounded-3xl p-4 sm:p-5 space-y-4 mb-6 shadow-sm">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider select-none">
+                <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse shrink-0"></span>
+                Featured Video: Discover AppLuxe
+              </div>
+              <div className="rounded-2xl overflow-hidden bg-black aspect-video relative shadow-inner border border-slate-950">
+                <video src="/blog/uploads/appluxe_promo.mp4" controls className="w-full h-full object-cover" playsInline />
+              </div>
+            </div>
+          );
+
           // Helper social sharing links renderer
           const renderSocialSharing = () => (
             <div className="border-y border-slate-100 py-4 flex items-center justify-between gap-4 flex-wrap">
@@ -362,6 +375,8 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
                   )}
                 </div>
 
+                {renderFeaturedVideo()}
+
                 <div className="prose prose-slate lg:prose-lg max-w-none text-slate-800 leading-relaxed text-base">
                   {renderContentBody()}
                 </div>
@@ -410,6 +425,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                   <div className="lg:col-span-2 space-y-8">
+                    {renderFeaturedVideo()}
                     <div className="prose prose-slate lg:prose-lg max-w-none text-slate-700 leading-relaxed text-base">
                       {renderContentBody()}
                     </div>
@@ -458,6 +474,8 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
                       </div>
                     )}
                   </div>
+
+                  {renderFeaturedVideo()}
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <OnThisPage headings={headings} />
