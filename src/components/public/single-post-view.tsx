@@ -250,7 +250,7 @@ export default async function SinglePostView({ post, siteName }: SinglePostViewP
                 Featured Video: Discover AppLuxe
               </div>
               <div className="rounded-2xl overflow-hidden bg-black aspect-video relative shadow-inner border border-slate-950">
-                <video src="/uploads/appluxe-promo.webm" controls className="w-full h-full object-cover" playsInline />
+                <video src="/uploads/appluxe-promo.webm" autoPlay loop muted controls className="w-full h-full object-cover" playsInline />
               </div>
             </div>
           );
