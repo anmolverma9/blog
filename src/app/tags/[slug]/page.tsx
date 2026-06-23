@@ -47,17 +47,18 @@ export default async function TagListingPage({ params }: TagPageProps) {
     notFound();
   }
 
-  // Fetch posts under tag
+  // Fetch posts under tag — newest first
   const { posts } = await postService.getPosts({
     status: 'published',
     tagSlug: slug,
+    orderBy: 'published_at',
     limit: 10,
   });
 
-  // Sidebar details
+  // Sidebar details — latest posts
   const { posts: trending } = await postService.getPosts({
     status: 'published',
-    orderBy: 'random',
+    orderBy: 'published_at',
     limit: 10,
   });
   const categoriesList = await categoryService.getAllCategories();

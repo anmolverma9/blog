@@ -28,6 +28,7 @@ export async function generateMetadata() {
 export default async function ArchivesPage() {
   const { posts } = await postService.getPosts({
     status: 'published',
+    orderBy: 'published_at',
     limit: 200, // Retrieve a comprehensive set for timeline layout
   });
 

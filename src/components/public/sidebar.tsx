@@ -22,14 +22,14 @@ export default async function Sidebar({ categories, recentPosts }: SidebarProps)
   try {
     const { posts } = await postService.getPosts({
       status: 'published',
-      orderBy: 'random',
+      orderBy: 'published_at',
       limit: 10,
     });
     if (posts.length > 0) {
       randomPostsForSidebar = posts;
     }
   } catch (e) {
-    console.error('Failed to load random posts for sidebar:', e);
+    console.error('Failed to load recent posts for sidebar:', e);
   }
 
   return (

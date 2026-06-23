@@ -19,17 +19,18 @@ export default async function SearchResultsPage({ searchParams }: SearchPageProp
   const resolvedParams = await searchParams;
   const query = resolvedParams.q || '';
 
-  // Query database using search
+  // Query database using search — newest first
   const { posts, total } = await postService.getPosts({
     status: 'published',
     search: query || undefined,
+    orderBy: 'published_at',
     limit: 10,
   });
 
-  // Sidebar details
+  // Sidebar details — latest posts
   const { posts: trending } = await postService.getPosts({
     status: 'published',
-    orderBy: 'random',
+    orderBy: 'published_at',
     limit: 10,
   });
   const categoriesList = await categoryService.getAllCategories();

@@ -39,23 +39,24 @@ export default async function Homepage({ searchParams }: PageProps) {
   // 1. Fetch Categories
   const categories = await categoryService.getAllCategories();
 
-  // 2. Fetch Latest Published Posts (up to 50 for in-memory slicing)
+  // 2. Fetch Latest Published Posts (up to 50 for in-memory slicing) — newest first
   const { posts: allPosts } = await postService.getPosts({
     status: 'published',
+    orderBy: 'published_at',
     limit: 50,
   });
 
-  // 3. Fetch Trending Posts for "You Missed" section
-  const { posts: trending } = await postService.getPosts({
+  // 3. Fetch Trending Posts (most viewed) for hero "Trending Stories" panel & "You Missed" section
+  const { posts: trendingPosts } = await postService.getPosts({
     status: 'published',
-    orderBy: 'random',
+    orderBy: 'views',
     limit: 10,
   });
 
   // Slices for Hero Section
-  const sliderPosts = allPosts.slice(0, 5); // Center: 5 posts in slider
-  const leftStackedPosts = allPosts.slice(4, 6); // Left: next 2 posts
-  const rightListPosts = allPosts.slice(0, 4); // Right: list of 4 recent posts
+  const sliderPosts = allPosts.slice(0, 5); // Center: 5 latest posts in slider
+  const leftStackedPosts = allPosts.slice(5, 7); // Left: next 2 latest posts
+  const rightListPosts = trendingPosts.slice(0, 4); // Right: top 4 most-viewed posts
 
   // Paginated Feed Configuration
   const feedLimit = 4;
@@ -295,12 +296,12 @@ export default async function Homepage({ searchParams }: PageProps) {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {trending.length === 0 ? (
+            {trendingPosts.length === 0 ? (
               <div className="col-span-full text-center py-10 text-slate-400 text-sm italic">
                 No items seeded
               </div>
             ) : (
-              trending.map((post) => (
+              trendingPosts.map((post) => (
                 <div
                   key={post.id}
                   className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-[300px] relative group"

@@ -33,10 +33,11 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     notFound();
   }
 
-  // 2. Fetch posts filtered by category id
+  // 2. Fetch posts filtered by category id — newest first
   const { posts, total } = await postService.getPosts({
     status: 'published',
     categoryId: category.id,
+    orderBy: 'published_at',
     limit,
     offset,
   });
@@ -44,7 +45,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   // Fetch sidebar data
   const { posts: trending } = await postService.getPosts({
     status: 'published',
-    orderBy: 'random',
+    orderBy: 'published_at',
     limit: 10,
   });
   const categoriesList = await categoryService.getAllCategories();
