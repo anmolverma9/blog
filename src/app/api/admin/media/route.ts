@@ -115,13 +115,16 @@ export async function POST(req: NextRequest) {
         id: mediaId,
         filename: uniqueFilename,
         file_path: relativePath,
+        file_size: fileSize,
+        mime_type: fileType,
         alt_text: altText || defaultSeo,
         title_text: titleText || defaultSeo,
+        created_at: new Date().toISOString(),
       },
     });
   } catch (err: any) {
     console.error('Admin POST media error:', err.message);
-    return NextResponse.json({ error: 'Failed to upload media file' }, { status: 500 });
+    return NextResponse.json({ error: `Failed to upload media file: ${err.message}` }, { status: 500 });
   }
 }
 

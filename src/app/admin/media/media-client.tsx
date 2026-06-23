@@ -175,7 +175,7 @@ export default function MediaClient() {
               className="group text-left border border-slate-200/80 hover:border-orange-400 rounded-xl overflow-hidden bg-white shadow-sm transition-all focus:outline-none"
             >
               <div className="aspect-video w-full bg-slate-50 overflow-hidden relative border-b border-slate-100 flex items-center justify-center">
-                {item.mime_type.startsWith('video/') ? (
+                {item.mime_type?.startsWith('video/') ? (
                   <>
                     <video src={item.file_path} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-250" muted playsInline preload="metadata" />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/15 group-hover:bg-black/25 transition-colors">
@@ -206,7 +206,7 @@ export default function MediaClient() {
             <>
               {/* Preview */}
               <div className="flex-1 min-w-[260px] md:max-w-[380px] h-[220px] md:h-[280px] border border-slate-100 bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center p-2 shrink-0 relative">
-                {selectedItem.mime_type.startsWith('video/') ? (
+                {selectedItem.mime_type?.startsWith('video/') ? (
                   <video src={selectedItem.file_path} controls className="max-w-full max-h-full object-contain rounded" />
                 ) : (
                   <img src={selectedItem.file_path} alt="Preview" className="max-w-full max-h-full object-contain rounded" />
