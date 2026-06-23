@@ -149,7 +149,7 @@ export default function MediaClient() {
         <label className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-orange-500/10">
           {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
           Upload New File
-          <input type="file" className="hidden" accept="image/*" onChange={handleUpload} disabled={uploading} />
+          <input type="file" className="hidden" accept="image/*,video/*" onChange={handleUpload} disabled={uploading} />
         </label>
       </div>
 
@@ -174,8 +174,21 @@ export default function MediaClient() {
               onClick={() => handleItemClick(item)}
               className="group text-left border border-slate-200/80 hover:border-orange-400 rounded-xl overflow-hidden bg-white shadow-sm transition-all focus:outline-none"
             >
-              <div className="aspect-video w-full bg-slate-50 overflow-hidden relative border-b border-slate-100">
-                <img src={item.file_path} alt={item.alt_text || item.filename} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-250" />
+              <div className="aspect-video w-full bg-slate-50 overflow-hidden relative border-b border-slate-100 flex items-center justify-center">
+                {item.mime_type.startsWith('video/') ? (
+                  <>
+                    <video src={item.file_path} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-250" muted playsInline preload="metadata" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/15 group-hover:bg-black/25 transition-colors">
+                      <div className="p-2 rounded-full bg-white/95 text-slate-800 shadow-md group-hover:scale-110 transition-transform">
+                        <svg className="h-4 w-4 fill-current text-orange-500" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <img src={item.file_path} alt={item.alt_text || item.filename} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-250" />
+                )}
               </div>
               <div className="p-3">
                 <p className="text-xs font-semibold text-slate-800 truncate">{item.filename}</p>
@@ -192,8 +205,12 @@ export default function MediaClient() {
           {selectedItem && (
             <>
               {/* Preview */}
-              <div className="flex-1 min-w-[260px] md:max-w-[380px] h-[220px] md:h-[280px] border border-slate-100 bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center p-2 shrink-0">
-                <img src={selectedItem.file_path} alt="Preview" className="max-w-full max-h-full object-contain rounded" />
+              <div className="flex-1 min-w-[260px] md:max-w-[380px] h-[220px] md:h-[280px] border border-slate-100 bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center p-2 shrink-0 relative">
+                {selectedItem.mime_type.startsWith('video/') ? (
+                  <video src={selectedItem.file_path} controls className="max-w-full max-h-full object-contain rounded" />
+                ) : (
+                  <img src={selectedItem.file_path} alt="Preview" className="max-w-full max-h-full object-contain rounded" />
+                )}
               </div>
 
               {/* Edit Details */}

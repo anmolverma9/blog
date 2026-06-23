@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
     const filePath = path.join(uploadDir, uniqueFilename);
     await fs.promises.writeFile(filePath, buffer);
 
-    const defaultSeo = cleanSeoMetadata(originalName);
+    const defaultSeo = cleanSeoMetadata(originalName, fileType);
 
     // Save record to DB
     const relativePath = `/uploads/${uniqueFilename}`;
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-function cleanSeoMetadata(filename: string): string {
+function cleanSeoMetadata(filename: string, mimeType?: string): string {
   const ext = path.extname(filename);
   let name = path.basename(filename, ext);
 
@@ -149,5 +149,6 @@ function cleanSeoMetadata(filename: string): string {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 
-  return cleanTitle || 'Image Asset';
+  const fallback = mimeType?.startsWith('video/') ? 'Video Asset' : 'Image Asset';
+  return cleanTitle || fallback;
 }
