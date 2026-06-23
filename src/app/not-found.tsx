@@ -3,6 +3,7 @@ import Link from 'next/link';
 import LayoutWrapper from '@/components/public/layout-wrapper';
 import { postService } from '@/modules/posts';
 import { categoryService } from '@/modules/categories';
+import { getBasePath } from '@/lib/utils';
 import { ArrowUpRight, BookOpen, Home, Search } from 'lucide-react';
 
 export const metadata = {
@@ -11,6 +12,8 @@ export const metadata = {
 };
 
 export default async function NotFound() {
+  const basePath = getBasePath();
+
   // Fetch latest articles and categories for the helpful section
   const { posts: latestPosts } = await postService.getPosts({
     status: 'published',
@@ -46,7 +49,7 @@ export default async function NotFound() {
 
           {/* Search Bar */}
           <form
-            action="/search"
+            action={`${basePath}/search`}
             method="GET"
             className="relative z-10 mt-8 w-full max-w-lg flex gap-2"
           >
