@@ -170,12 +170,22 @@ export class PostRepository {
 
     // Order By
     let orderBySql = 'ORDER BY p.id DESC';
-    if (options.orderBy === 'views') {
+    if (options.orderBy === 'views' || options.orderBy === 'views_desc') {
       orderBySql = 'ORDER BY p.views DESC, p.id DESC';
-    } else if (options.orderBy === 'published_at') {
+    } else if (options.orderBy === 'views_asc') {
+      orderBySql = 'ORDER BY p.views ASC, p.id ASC';
+    } else if (options.orderBy === 'published_at' || options.orderBy === 'published_at_desc') {
       orderBySql = 'ORDER BY p.published_at DESC, p.id DESC';
-    } else if (options.orderBy === 'created_at') {
+    } else if (options.orderBy === 'published_at_asc') {
+      orderBySql = 'ORDER BY p.published_at ASC, p.id ASC';
+    } else if (options.orderBy === 'created_at' || options.orderBy === 'created_at_desc') {
       orderBySql = 'ORDER BY p.created_at DESC, p.id DESC';
+    } else if (options.orderBy === 'created_at_asc') {
+      orderBySql = 'ORDER BY p.created_at ASC, p.id ASC';
+    } else if (options.orderBy === 'title_asc') {
+      orderBySql = 'ORDER BY p.title ASC, p.id ASC';
+    } else if (options.orderBy === 'title_desc') {
+      orderBySql = 'ORDER BY p.title DESC, p.id DESC';
     } else if (options.orderBy === 'random') {
       orderBySql = 'ORDER BY RAND()';
     }

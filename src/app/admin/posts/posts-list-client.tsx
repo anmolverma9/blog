@@ -35,6 +35,11 @@ export default function PostsListClient() {
   const [selectedPostIds, setSelectedPostIds] = useState<number[]>([]);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
+  // Pagination & Sorting states (Latest first by default)
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [orderBy, setOrderBy] = useState('published_at_desc');
+
   useEffect(() => {
     async function loadFilters() {
       try {
@@ -59,6 +64,11 @@ export default function PostsListClient() {
       if (categoryId) params.append('categoryId', categoryId);
       if (authorId) params.append('authorId', authorId);
       
+      // Pagination & Sorting
+      params.append('limit', String(limit));
+      params.append('offset', String((page - 1) * limit));
+      if (orderBy) params.append('orderBy', orderBy);
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/admin/posts?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
@@ -72,14 +82,29 @@ export default function PostsListClient() {
     }
   };
 
+  // Re-fetch when any filters, pagination, or sorting parameters change
   useEffect(() => {
     fetchPosts();
     setSelectedPostIds([]); // Reset selection when filter changes
-  }, [status, categoryId, authorId]); // Fetch when filters change, search is handled on submit/debounce
+  }, [status, categoryId, authorId, page, limit, orderBy]);
+
+  const handleFilterChange = (setter: (val: string) => void, val: string) => {
+    setter(val);
+    setPage(1);
+  };
+
+  const handleLimitChange = (val: number) => {
+    setLimit(val);
+    setPage(1);
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchPosts();
+    if (page !== 1) {
+      setPage(1);
+    } else {
+      fetchPosts();
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -148,6 +173,18 @@ export default function PostsListClient() {
     }
   };
 
+  const totalPages = Math.ceil(total / limit);
+  const pageNumbers: number[] = [];
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+  if (endPage - startPage + 1 < maxVisiblePages) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+  for (let i = startPage; i <= endPage; i++) {
+    pageNumbers.push(i);
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Page header */}
@@ -181,7 +218,7 @@ export default function PostsListClient() {
           {authors.length > 0 && (
             <select
               value={authorId}
-              onChange={(e) => setAuthorId(e.target.value)}
+              onChange={(e) => handleFilterChange(setAuthorId, e.target.value)}
               className="h-10 px-3 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20"
             >
               <option value="">All Authors</option>
@@ -193,7 +230,7 @@ export default function PostsListClient() {
 
           <select
             value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
+            onChange={(e) => handleFilterChange(setCategoryId, e.target.value)}
             className="h-10 px-3 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20"
           >
             <option value="">All Categories</option>
@@ -204,13 +241,29 @@ export default function PostsListClient() {
 
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) => handleFilterChange(setStatus, e.target.value)}
             className="h-10 px-3 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20"
           >
             <option value="">All Statuses</option>
             <option value="published">Published</option>
             <option value="draft">Draft</option>
             <option value="scheduled">Scheduled</option>
+          </select>
+
+          {/* Sort By Filter */}
+          <select
+            value={orderBy}
+            onChange={(e) => handleFilterChange(setOrderBy, e.target.value)}
+            className="h-10 px-3 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+          >
+            <option value="created_at_desc">Latest Created</option>
+            <option value="created_at_asc">Oldest Created</option>
+            <option value="published_at_desc">Latest Published</option>
+            <option value="published_at_asc">Oldest Published</option>
+            <option value="views_desc">Most Viewed</option>
+            <option value="views_asc">Least Viewed</option>
+            <option value="title_asc">Title (A-Z)</option>
+            <option value="title_desc">Title (Z-A)</option>
           </select>
 
           <Button variant="outline" size="icon" onClick={fetchPosts} className="h-10 w-10 text-slate-500 border-slate-200">
@@ -340,7 +393,123 @@ export default function PostsListClient() {
               ))}
             </TableBody>
           </Table>
-        </div>
+
+          {/* Pagination Controls */}
+          {total > 0 && (
+            <div className="bg-slate-50/50 px-4 py-3 flex items-center justify-between border-t border-slate-100 sm:px-6">
+              <div className="flex-1 flex justify-between sm:hidden">
+                <Button
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={page === 1}
+                  variant="outline"
+                  size="sm"
+                >
+                  Previous
+                </Button>
+                <Button
+                  onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={page === totalPages}
+                  variant="outline"
+                  size="sm"
+                >
+                  Next
+                </Button>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div className="flex items-center gap-6">
+                  {/* Items per page selector (Professional placement) */}
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                    <span>Show</span>
+                    <select
+                      value={limit}
+                      onChange={(e) => handleLimitChange(Number(e.target.value))}
+                      className="h-8 px-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    >
+                      <option value="5">5</option>
+                      <option value="10">10</option>
+                      <option value="20">20</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                    <span>entries</span>
+                  </div>
+
+                  <p className="text-sm text-slate-500">
+                    Showing{' '}
+                    <span className="font-semibold text-slate-700">{Math.min(total, (page - 1) * limit + 1)}</span>
+                    {' '}to{' '}
+                    <span className="font-semibold text-slate-700">{Math.min(total, page * limit)}</span>
+                    {' '}of{' '}
+                    <span className="font-semibold text-slate-700">{total}</span>
+                    {' '}articles
+                  </p>
+                </div>
+                {totalPages > 1 && (
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px gap-1.5" aria-label="Pagination">
+                      <Button
+                        onClick={() => setPage(1)}
+                        disabled={page === 1}
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 rounded-md border-slate-200"
+                        title="First Page"
+                      >
+                        &laquo;
+                      </Button>
+                      <Button
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={page === 1}
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 rounded-md border-slate-200"
+                        title="Previous Page"
+                      >
+                        &lsaquo;
+                      </Button>
+
+                      {pageNumbers.map((pNum) => (
+                        <Button
+                          key={pNum}
+                          onClick={() => setPage(pNum)}
+                          variant={pNum === page ? 'default' : 'outline'}
+                          className={`h-8 w-8 rounded-md border-slate-200 text-xs font-semibold ${
+                            pNum === page
+                              ? 'bg-orange-500 hover:bg-orange-600 text-white border-orange-500'
+                              : 'text-slate-600 hover:bg-slate-50'
+                          }`}
+                        >
+                          {pNum}
+                        </Button>
+                      ))}
+
+                      <Button
+                        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                        disabled={page === totalPages}
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 rounded-md border-slate-200"
+                        title="Next Page"
+                      >
+                        &rsaquo;
+                      </Button>
+                      <Button
+                        onClick={() => setPage(totalPages)}
+                        disabled={page === totalPages}
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 rounded-md border-slate-200"
+                        title="Last Page"
+                      >
+                        &raquo;
+                      </Button>
+                    </nav>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          </div>
         )}
       </div>
     </div>
