@@ -54,7 +54,10 @@ export default function Navbar({
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (search.trim()) {
-      router.push(`/search?q=${encodeURIComponent(search.trim())}`);
+      const pathname = window.location.pathname;
+      const isBlogPrefix = pathname.startsWith('/blog');
+      const basePath = isBlogPrefix ? '/blog' : '';
+      window.location.href = `${basePath}/search?q=${encodeURIComponent(search.trim())}`;
     }
   };
 

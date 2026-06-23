@@ -3,7 +3,7 @@ import Link from 'next/link';
 import LayoutWrapper from '@/components/public/layout-wrapper';
 import { postService } from '@/modules/posts';
 import { categoryService } from '@/modules/categories';
-import { getBasePath } from '@/lib/utils';
+import SearchForm from '@/components/public/search-form';
 import { ArrowUpRight, BookOpen, Home, Search } from 'lucide-react';
 
 export const metadata = {
@@ -12,8 +12,6 @@ export const metadata = {
 };
 
 export default async function NotFound() {
-  const basePath = getBasePath();
-
   // Fetch latest articles and categories for the helpful section
   const { posts: latestPosts } = await postService.getPosts({
     status: 'published',
@@ -40,38 +38,15 @@ export default async function NotFound() {
           </p>
 
           {/* Message */}
-          <h1 className="relative z-10 -mt-4 text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-            Oops! This page doesn&apos;t exist.
+          <h1 className="relative z-10 text-xl md:text-2xl font-extrabold text-white mt-4">
+            Oops! That page can’t be found.
           </h1>
           <p className="relative z-10 mt-3 text-slate-400 text-sm max-w-md leading-relaxed">
             The URL you visited may have been moved, deleted, or never existed. Try searching for what you need or browse our latest articles below.
           </p>
 
           {/* Search Bar */}
-          <form
-            action={`${basePath}/search`}
-            method="GET"
-            className="relative z-10 mt-8 w-full max-w-lg flex gap-2"
-          >
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-              <input
-                id="not-found-search"
-                name="q"
-                type="search"
-                placeholder="Search articles..."
-                autoComplete="off"
-                className="w-full h-12 pl-11 pr-4 rounded-full bg-white/10 border border-white/20 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition-all"
-              />
-            </div>
-            <button
-              type="submit"
-              id="not-found-search-btn"
-              className="h-12 px-6 rounded-full bg-orange-600 hover:bg-orange-500 text-white text-sm font-bold shadow-lg shadow-orange-900/40 transition-all shrink-0 flex items-center gap-2"
-            >
-              Search
-            </button>
-          </form>
+          <SearchForm variant="notfound" />
 
           {/* Quick Actions */}
           <div className="relative z-10 mt-6 flex flex-wrap items-center justify-center gap-3">

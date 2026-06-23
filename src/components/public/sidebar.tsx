@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Newspaper, LayoutGrid, Search } from 'lucide-react';
 import { settingsService } from '@/modules/settings';
 import { postService } from '@/modules/posts';
-import { getBasePath } from '@/lib/utils';
+import SearchForm from '@/components/public/search-form';
 
 interface SidebarProps {
   categories: Array<{ id?: number; name: string; slug: string }>;
@@ -33,8 +33,6 @@ export default async function Sidebar({ categories, recentPosts }: SidebarProps)
     console.error('Failed to load recent posts for sidebar:', e);
   }
 
-  const basePath = getBasePath();
-
   return (
     <aside className="space-y-8 sticky top-20">
       {/* 1. Search Widget */}
@@ -46,20 +44,7 @@ export default async function Sidebar({ categories, recentPosts }: SidebarProps)
         </div>
         
         {/* Search Input & Button Form */}
-        <form action={`${basePath}/search`} method="GET" className="flex items-center gap-2">
-          <input
-            name="q"
-            placeholder="Search articles..."
-            className="flex-1 h-10 px-4 rounded-full border border-slate-200 bg-white text-sm focus:outline-none focus:border-orange-500 transition-colors"
-            required
-          />
-          <button
-            type="submit"
-            className="h-10 px-5 rounded-full bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold transition-all shadow-md shadow-orange-600/10 shrink-0"
-          >
-            Search
-          </button>
-        </form>
+        <SearchForm variant="sidebar" />
       </div>
 
       {/* 2. Recent Posts Widget */}
