@@ -408,31 +408,60 @@ export default function BlockEditor({ initialBlocks = [], onChange, postId = 'ne
         updated.splice(index, 1, ...parsedBlocks);
         setBlocks(updated);
         
-        // Background upload for external hotlinked images
+        // Background upload for external hotlinked or pasted base64 images
         const uploadedBlocks = await Promise.all(
           parsedBlocks.map(async (block) => {
-            if (block.type === 'image' && block.data.url && block.data.url.startsWith('http')) {
-              try {
-                const formData = new FormData();
-                formData.append('url', block.data.url);
-                const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media', {
-                  method: 'POST',
-                  body: formData,
-                });
-                
-                if (res.ok) {
-                  const data = await res.json();
-                  return {
-                    ...block,
-                    data: {
-                      ...block.data,
-                      url: data.media.file_path,
-                      alt: data.media.alt_text || data.media.filename,
+            if (block.type === 'image' && block.data.url) {
+              if (block.data.url.startsWith('data:image/')) {
+                // Upload base64 image
+                try {
+                  const file = dataURLtoFile(block.data.url, `pasted_image_${Date.now()}`);
+                  if (file) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media', {
+                      method: 'POST',
+                      body: formData,
+                    });
+                    if (res.ok) {
+                      const data = await res.json();
+                      return {
+                        ...block,
+                        data: {
+                          ...block.data,
+                          url: data.media.file_path,
+                          alt: data.media.alt_text || data.media.filename,
+                        }
+                      };
                     }
-                  };
+                  }
+                } catch (err) {
+                  console.error('Failed to upload pasted base64 image:', err);
                 }
-              } catch (err) {
-                console.error('Failed to auto-upload external image:', err);
+              } else if (block.data.url.startsWith('http')) {
+                // Upload external image
+                try {
+                  const formData = new FormData();
+                  formData.append('url', block.data.url);
+                  const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media', {
+                    method: 'POST',
+                    body: formData,
+                  });
+                  
+                  if (res.ok) {
+                    const data = await res.json();
+                    return {
+                      ...block,
+                      data: {
+                        ...block.data,
+                        url: data.media.file_path,
+                        alt: data.media.alt_text || data.media.filename,
+                      }
+                    };
+                  }
+                } catch (err) {
+                  console.error('Failed to auto-upload external image:', err);
+                }
               }
             }
             return block;
@@ -922,6 +951,32 @@ function getDefaultData(type: Block['type']) {
       return { type: 'faq', name: '', description: '', items: [{ question: '', answer: '' }] };
     default:
       return {};
+  }
+}
+
+function dataURLtoFile(dataurl: string, filename: string): File | null {
+  try {
+    const arr = dataurl.split(',');
+    if (arr.length < 2) return null;
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+    const isBase64 = arr[0].indexOf('base64') >= 0;
+    let bstr: string;
+    if (isBase64) {
+      bstr = atob(arr[1]);
+    } else {
+      bstr = decodeURIComponent(arr[1]);
+    }
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    const extension = mime.split('/')[1] || 'png';
+    return new File([u8arr], `${filename}.${extension}`, { type: mime });
+  } catch (e) {
+    console.error('Failed to convert base64 data URL to File:', e);
+    return null;
   }
 }
 
