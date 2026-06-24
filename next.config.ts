@@ -19,6 +19,10 @@ const basePath = deriveBasePath();
 
 const nextConfig: NextConfig = {
   basePath,
+  experimental: {
+    middlewareClientMaxBodySize: '100mb',
+    proxyClientMaxBodySize: '100mb',
+  }
 };
 
 export default nextConfig;

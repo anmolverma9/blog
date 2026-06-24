@@ -56,6 +56,32 @@ interface LinkSuggestion {
   suggestionText: string;
 }
 
+function dataURLtoFile(dataurl: string, filename: string): File | null {
+  try {
+    const arr = dataurl.split(',');
+    if (arr.length < 2) return null;
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+    const isBase64 = arr[0].indexOf('base64') >= 0;
+    let bstr: string;
+    if (isBase64) {
+      bstr = atob(arr[1]);
+    } else {
+      bstr = decodeURIComponent(arr[1]);
+    }
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    const extension = mime.split('/')[1] || 'png';
+    return new File([u8arr], `${filename}.${extension}`, { type: mime });
+  } catch (e) {
+    console.error('Failed to convert base64 data URL to File:', e);
+    return null;
+  }
+}
+
 interface PostEditorProps {
   postId?: number;
 }
@@ -379,7 +405,49 @@ export default function PostEditor({ postId }: PostEditorProps) {
 
   // Submit Handler
   const handleSave = async (statusOverride?: string) => {
+    setSaving(true);
     const isVisual = editorType === 'visual';
+    let currentBlocks = [...blocks];
+    let hasBase64 = false;
+
+    if (!isVisual) {
+      // Process and upload any remaining base64 images in blocks first
+      for (let i = 0; i < currentBlocks.length; i++) {
+        const block = currentBlocks[i];
+        if (block.type === 'image' && block.data.url && block.data.url.startsWith('data:image/')) {
+          hasBase64 = true;
+          try {
+            const file = dataURLtoFile(block.data.url, `pasted_image_${Date.now()}`);
+            if (file) {
+              const formData = new FormData();
+              formData.append('file', file);
+              const res = await fetch((process.env.NEXT_PUBLIC_APP_URL || '') + '/api/admin/media', {
+                method: 'POST',
+                body: formData,
+              });
+              if (res.ok) {
+                const data = await res.json();
+                currentBlocks[i] = {
+                  ...block,
+                  data: {
+                    ...block.data,
+                    url: data.media.file_path,
+                    alt: data.media.alt_text || data.media.filename,
+                  }
+                };
+              }
+            }
+          } catch (err) {
+            console.error('Failed to upload base64 image on save:', err);
+          }
+        }
+      }
+
+      if (hasBase64) {
+        setBlocks(currentBlocks);
+      }
+    }
+
     let compiledContent = '';
     if (isVisual) {
       try {
@@ -390,11 +458,12 @@ export default function PostEditor({ postId }: PostEditorProps) {
         compiledContent = 'Visual Layout Post';
       }
     } else {
-      compiledContent = compileBlocksToMarkdown(blocks);
+      compiledContent = compileBlocksToMarkdown(currentBlocks);
     }
 
     if (!title || !slug || !compiledContent) {
       alert('Title, slug, and content are required.');
+      setSaving(false);
       return;
     }
 
@@ -402,7 +471,6 @@ export default function PostEditor({ postId }: PostEditorProps) {
       setStatus(statusOverride);
     }
 
-    setSaving(true);
     const payload = {
       title,
       slug,
@@ -415,7 +483,7 @@ export default function PostEditor({ postId }: PostEditorProps) {
       tagIds: selectedTags,
       meta: {
         editor_type: editorType,
-        editor_blocks: isVisual ? content : JSON.stringify(blocks),
+        editor_blocks: isVisual ? content : JSON.stringify(currentBlocks),
         focus_keyword: focusKeyword,
         is_sponsored: isSponsored,
         sponsor_name: isSponsored ? sponsorName : '',
