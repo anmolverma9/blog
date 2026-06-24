@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { Search, Menu, X, Bell, Zap } from 'lucide-react';
+import { Search, Menu, X, MessageSquare, Zap } from 'lucide-react';
 
 interface NavbarProps {
   siteName?: string;
@@ -29,18 +29,7 @@ export default function Navbar({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dateStr, setDateStr] = useState('');
 
-  const handleScrollToSubscribe = () => {
-    if (typeof window !== 'undefined') {
-      const el = document.getElementById('footer-newsletter-section');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-        const input = document.getElementById('footer-newsletter-email');
-        if (input) {
-          setTimeout(() => input.focus(), 800);
-        }
-      }
-    }
-  };
+  // Removed handleScrollToSubscribe as the button now redirects to feedback
 
   useEffect(() => {
     const d = new Date();
@@ -158,16 +147,17 @@ export default function Navbar({
             })}
           </div>
 
-          {/* Subscribe Button (Desktop) */}
+          {/* Feedback Button (Desktop) */}
           <div className="hidden lg:flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleScrollToSubscribe}
+            <a
+              href="https://appluxe.com/feedback/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/10 transition-all cursor-pointer"
             >
-              <Bell className="h-3.5 w-3.5 fill-current" />
-              Subscribe
-            </button>
+              <MessageSquare className="h-3.5 w-3.5" />
+              Feedback
+            </a>
           </div>
 
           {/* Mobile Navigation Header items */}
@@ -229,17 +219,18 @@ export default function Navbar({
                   </Link>
                 );
               })}
-              <button
-                type="button"
+              <a
+                href="https://appluxe.com/feedback/"
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  setTimeout(handleScrollToSubscribe, 200);
                 }}
                 className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg bg-orange-600 text-white font-bold mt-2 cursor-pointer"
               >
-                <Bell className="h-4 w-4 fill-current" />
-                Subscribe
-              </button>
+                <MessageSquare className="h-4 w-4" />
+                Feedback
+              </a>
             </div>
           </div>
         )}
