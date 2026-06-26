@@ -68,8 +68,16 @@ export default async function Homepage({ searchParams }: PageProps) {
   // Sidebar recent posts (top 5 recent)
   const recentPostsForSidebar = allPosts.slice(0, 5);
 
+  const siteUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+
   return (
     <LayoutWrapper>
+      {currentPage > 1 && (
+        <link rel="prev" href={`${siteUrl}?page=${currentPage - 1}`} />
+      )}
+      {currentPage < totalPages && (
+        <link rel="next" href={`${siteUrl}?page=${currentPage + 1}`} />
+      )}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 space-y-12">
         
         {/* ========================================================

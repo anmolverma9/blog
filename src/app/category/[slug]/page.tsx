@@ -56,8 +56,16 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     return `/category/${slug}?page=${pageNumber}`;
   };
 
+  const siteUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+
   return (
     <LayoutWrapper>
+      {page > 1 && (
+        <link rel="prev" href={`${siteUrl}${buildPageUrl(page - 1)}`} />
+      )}
+      {page < totalPages && (
+        <link rel="next" href={`${siteUrl}${buildPageUrl(page + 1)}`} />
+      )}
       <div className="editorial-container py-10 space-y-8 animate-in fade-in duration-300">
         {/* Active Filter Banner */}
         <div className="bg-orange-50 border border-orange-100 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">

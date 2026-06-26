@@ -57,8 +57,16 @@ export default async function PublicPostsListingPage({ searchParams }: PostsPage
     return `/posts?${params.toString()}`;
   };
 
+  const siteUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+
   return (
     <LayoutWrapper>
+      {page > 1 && (
+        <link rel="prev" href={`${siteUrl}${buildPageUrl(page - 1)}`} />
+      )}
+      {page < totalPages && (
+        <link rel="next" href={`${siteUrl}${buildPageUrl(page + 1)}`} />
+      )}
       <div className="editorial-container py-10 space-y-8 animate-in fade-in duration-300">
         {/* Active Filter Banners */}
         {(categorySlug || tagSlug || search) && (
