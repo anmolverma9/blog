@@ -1,9 +1,6 @@
 import { MetadataRoute } from 'next';
 import { postService } from '@/modules/posts';
 import { pageService } from '@/modules/pages';
-import { categoryService } from '@/modules/categories';
-import { tagService } from '@/modules/tags';
-import { userService } from '@/modules/users';
 
 export const revalidate = 3600; // Cache sitemap for 1 hour
 
@@ -17,12 +14,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
       priority: 1.0,
-    },
-    {
-      url: `${siteUrl}/posts`,
-      lastModified: new Date(),
-      changeFrequency: 'daily' as const,
-      priority: 0.8,
     },
   ];
 
@@ -56,51 +47,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
   } catch (err) {
     console.error('Error compiling pages for sitemap:', err);
-  }
-
-  // 4. Categories sitemap mapping
-  try {
-    const categories = await categoryService.getAllCategories();
-    categories.forEach((cat) => {
-      routes.push({
-        url: `${siteUrl}/categories/${cat.slug}`,
-        lastModified: cat.updated_at ? new Date(cat.updated_at) : new Date(),
-        changeFrequency: 'weekly' as const,
-        priority: 0.5,
-      });
-    });
-  } catch (err) {
-    console.error('Error compiling categories for sitemap:', err);
-  }
-
-  // 5. Tags sitemap mapping
-  try {
-    const tags = await tagService.getAllTags();
-    tags.forEach((tag) => {
-      routes.push({
-        url: `${siteUrl}/tags/${tag.slug}`,
-        lastModified: tag.updated_at ? new Date(tag.updated_at) : new Date(),
-        changeFrequency: 'weekly' as const,
-        priority: 0.4,
-      });
-    });
-  } catch (err) {
-    console.error('Error compiling tags for sitemap:', err);
-  }
-
-  // 6. Authors profiles mapping
-  try {
-    const authors = await userService.getAllAuthors();
-    authors.forEach((author) => {
-      routes.push({
-        url: `${siteUrl}/authors/${author.id}`,
-        lastModified: author.updated_at ? new Date(author.updated_at) : new Date(),
-        changeFrequency: 'monthly' as const,
-        priority: 0.4,
-      });
-    });
-  } catch (err) {
-    console.error('Error compiling authors for sitemap:', err);
   }
 
   return routes;

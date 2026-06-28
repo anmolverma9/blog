@@ -17,7 +17,66 @@ export class RedirectRepository {
   }
 
   async findByOldUrl(oldUrl: string): Promise<Redirect | null> {
-    const [rows]: any = await pool.query('SELECT * FROM redirects WHERE old_url = ?', [oldUrl]);
+    if (!oldUrl) return null;
+    const urlsToTry = new Set<string>();
+    
+    // Add raw input
+    urlsToTry.add(oldUrl);
+    urlsToTry.add(oldUrl.trim());
+    
+    // Normalize path by stripping trailing/leading whitespace and slashes
+    const trimmed = oldUrl.trim();
+    const cleanPath = trimmed.replace(/\/$/, ""); // strip trailing slash
+    
+    urlsToTry.add(cleanPath);
+    urlsToTry.add(cleanPath + "/");
+    
+    // If it starts with /blog, try matching without the /blog prefix as well
+    if (cleanPath.startsWith('/blog')) {
+      const strippedPath = cleanPath.substring(5); // remove '/blog'
+      if (strippedPath.startsWith('/')) {
+        urlsToTry.add(strippedPath);
+        urlsToTry.add(strippedPath + "/");
+        urlsToTry.add(strippedPath.replace(/\/$/, ""));
+      } else {
+        const withSlash = '/' + strippedPath;
+        urlsToTry.add(withSlash);
+        urlsToTry.add(withSlash + "/");
+        urlsToTry.add(withSlash.replace(/\/$/, ""));
+      }
+    } else {
+      // If it doesn't start with /blog, try adding /blog prefix as well
+      const withBlog = '/blog' + (cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath);
+      urlsToTry.add(withBlog);
+      urlsToTry.add(withBlog + "/");
+      urlsToTry.add(withBlog.replace(/\/$/, ""));
+    }
+
+    // Add absolute URL variations
+    const domainVariations = [
+      'https://appluxe.com',
+      'https://www.appluxe.com',
+      'http://appluxe.com',
+      'http://www.appluxe.com'
+    ];
+
+    // For each unique path format we've gathered, generate absolute URL variations
+    const currentPaths = Array.from(urlsToTry);
+    for (const path of currentPaths) {
+      if (path.startsWith('/')) {
+        for (const domain of domainVariations) {
+          urlsToTry.add(domain + path);
+          urlsToTry.add(domain + path + '/');
+          urlsToTry.add((domain + path).replace(/\/$/, ""));
+        }
+      }
+    }
+
+    const uniqueUrls = Array.from(urlsToTry);
+    const placeholders = uniqueUrls.map(() => '?').join(', ');
+    const query = `SELECT * FROM redirects WHERE old_url IN (${placeholders}) LIMIT 1`;
+    
+    const [rows]: any = await pool.query(query, uniqueUrls);
     return rows[0] || null;
   }
 
