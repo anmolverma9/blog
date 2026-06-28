@@ -25,6 +25,7 @@ export default function Navbar({
 }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const isHomepage = pathname === '/';
   const [search, setSearch] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dateStr, setDateStr] = useState('');
@@ -111,11 +112,23 @@ export default function Navbar({
       <div className="py-8 px-4 text-center max-w-[1440px] mx-auto flex flex-col items-center">
         <Link href="/" className="inline-block">
           {siteLogo ? (
-            <img src={siteLogo} alt={siteName} className="h-16 md:h-20 object-contain mx-auto" />
+            isHomepage ? (
+              <h1 className="inline-block">
+                <img src={siteLogo} alt={siteName} className="h-16 md:h-20 object-contain mx-auto" />
+              </h1>
+            ) : (
+              <img src={siteLogo} alt={siteName} className="h-16 md:h-20 object-contain mx-auto" />
+            )
           ) : (
-            <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
-              {siteName}
-            </h1>
+            isHomepage ? (
+              <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
+                {siteName}
+              </h1>
+            ) : (
+              <span className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight block">
+                {siteName}
+              </span>
+            )
           )}
         </Link>
         {siteDescription && (
