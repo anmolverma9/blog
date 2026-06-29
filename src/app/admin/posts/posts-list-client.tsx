@@ -248,6 +248,8 @@ export default function PostsListClient() {
             <option value="published">Published</option>
             <option value="draft">Draft</option>
             <option value="scheduled">Scheduled</option>
+            <option value="pending_review">Pending Review</option>
+            <option value="pending_payment">Pending Payment</option>
           </select>
 
           {/* Sort By Filter */}
@@ -338,14 +340,22 @@ export default function PostsListClient() {
                     {post.category_name || <span className="text-slate-400 italic">None</span>}
                   </TableCell>
                   <TableCell>
-                    <span className={`capitalize px-2.5 py-1 rounded-full text-xs font-semibold ${
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                       post.status === 'published'
                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
                         : post.status === 'scheduled'
                         ? 'bg-blue-50 text-blue-700 border border-blue-100'
-                        : 'bg-amber-50 text-amber-700 border border-amber-100'
+                        : post.status === 'pending_payment'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : post.status === 'pending_review'
+                        ? 'bg-purple-50 text-purple-700 border border-purple-100'
+                        : 'bg-slate-50 text-slate-600 border border-slate-200'
                     }`}>
-                      {post.status}
+                      {post.status === 'pending_payment'
+                        ? 'Pending Payment'
+                        : post.status === 'pending_review'
+                        ? 'Pending Review'
+                        : post.status}
                     </span>
                   </TableCell>
                   <TableCell className="text-slate-600 text-sm font-medium">
