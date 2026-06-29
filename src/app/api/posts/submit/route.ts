@@ -99,8 +99,8 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         }],
         mode: 'payment',
-        success_url: `${req.nextUrl.origin}/posts/submit/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.nextUrl.origin}/posts/submit/cancel`,
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin}/posts/submit/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin}/posts/submit/cancel`,
         metadata: {
           postId: id.toString(),
         }
