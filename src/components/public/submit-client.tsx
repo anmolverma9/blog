@@ -14,7 +14,12 @@ interface Category {
   name: string;
 }
 
-export default function SubmitClient() {
+interface SubmitClientProps {
+  isPaid?: boolean;
+  price?: string;
+}
+
+export default function SubmitClient({ isPaid = false, price = '10.00' }: SubmitClientProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [guestName, setGuestName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
@@ -68,6 +73,11 @@ export default function SubmitClient() {
       });
 
       if (res.ok) {
+        const data = await res.json();
+        if (data.checkoutUrl) {
+          window.location.href = data.checkoutUrl;
+          return;
+        }
         setSuccess(true);
         setGuestName('');
         setGuestEmail('');
@@ -137,6 +147,15 @@ export default function SubmitClient() {
                   <div className="bg-rose-50 border border-rose-100 text-rose-700 text-xs p-3.5 rounded-xl flex items-center gap-2">
                     <AlertCircle className="h-4 w-4 shrink-0" />
                     <span>{error}</span>
+                  </div>
+                )}
+
+                {isPaid && (
+                  <div className="bg-orange-50 border border-orange-100 text-orange-800 text-xs p-4 rounded-2xl flex flex-col gap-1">
+                    <span className="font-extrabold uppercase tracking-wider text-[10px]">Paid Submission Active</span>
+                    <p className="leading-relaxed font-semibold">
+                      This blog charges a review fee of <strong>${Number(price).toFixed(2)} USD</strong> for guest submissions. After clicking submit, you will be redirected to Stripe to finalize your payment.
+                    </p>
                   </div>
                 )}
 
@@ -230,7 +249,7 @@ export default function SubmitClient() {
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-11 text-xs shadow-md shadow-orange-500/10 flex items-center justify-center gap-1.5"
                 >
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  Submit Draft for Review
+                  {isPaid ? `Pay & Submit Review ($${Number(price).toFixed(2)})` : 'Submit Draft for Review'}
                 </Button>
               </form>
             )}

@@ -17,6 +17,7 @@ interface PostPending {
   author_name: string;
   category_name?: string;
   updated_at: string;
+  meta?: Record<string, string>;
 }
 
 export default function EditorialClient() {
@@ -143,7 +144,15 @@ export default function EditorialClient() {
                     </span>
                     <h4 className="font-extrabold text-slate-900 text-sm">{post.title}</h4>
                     <p className="text-slate-500 text-xs leading-normal font-medium max-w-xl">{post.summary || 'No summary preview configured.'}</p>
-                    <p className="text-[10px] text-slate-400 font-medium">Submitted by: <span className="text-slate-600 font-bold">{post.author_name}</span> • Last Update: {new Date(post.updated_at).toLocaleString()}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">
+                      Submitted by:{" "}
+                      <span className="text-slate-600 font-bold">
+                        {post.meta?.is_guest_submission === 'true'
+                          ? `${post.meta.guest_author_name} (${post.meta.guest_author_email})`
+                          : post.author_name}
+                      </span>{" "}
+                      • Last Update: {new Date(post.updated_at).toLocaleString()}
+                    </p>
                   </div>
                   <div className="flex gap-2 shrink-0 self-end sm:self-center">
                     <Button onClick={() => setSelectedPost(post)} className="bg-orange-500 hover:bg-orange-600 text-white font-bold h-8 text-xs flex items-center gap-1">
@@ -160,14 +169,17 @@ export default function EditorialClient() {
       {/* Review Dialog modal */}
       {selectedPost && (
         <Dialog open={true} onOpenChange={() => setSelectedPost(null)}>
-          <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto rounded-3xl font-sans bg-white border border-slate-200 text-slate-900">
+          <DialogContent className="sm:max-w-4xl w-full max-h-[85vh] overflow-y-auto rounded-3xl font-sans bg-white border border-slate-200 text-slate-900 p-6 md:p-8">
             <DialogHeader className="border-b pb-4">
               <span className="text-[9px] font-bold text-orange-500 uppercase bg-orange-50 px-2 py-0.5 rounded w-fit">
                 Pending Approval
               </span>
               <DialogTitle className="text-xl font-bold tracking-tight text-slate-900 mt-1">{selectedPost.title}</DialogTitle>
               <DialogDescription className="text-xs">
-                Author: {selectedPost.author_name} • Slug: /{selectedPost.slug}
+                Author: {selectedPost.meta?.is_guest_submission === 'true'
+                  ? `${selectedPost.meta.guest_author_name} (${selectedPost.meta.guest_author_email})`
+                  : selectedPost.author_name}{" "}
+                • Slug: /{selectedPost.slug}
               </DialogDescription>
             </DialogHeader>
 
@@ -200,7 +212,7 @@ export default function EditorialClient() {
                   />
                 </div>
 
-                <div className="flex gap-2 justify-end">
+                <div className="flex flex-wrap gap-2 justify-end items-center pt-2">
                   <Button
                     onClick={() => handleApprove(selectedPost.id)}
                     disabled={processing}

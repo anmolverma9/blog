@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { postService } from '@/modules/posts';
 import { userService } from '@/modules/users';
+import { sendContributorApprovedAlert, sendContributorRejectedAlert } from '@/lib/mailer';
 
 async function verifyPostAccess(postId: number, session: any) {
   const post = await postService.getPost(postId);
@@ -94,6 +95,37 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (body.translation_group_id !== undefined) updateData.translation_group_id = body.translation_group_id;
     if (meta !== undefined) updateData.meta = meta;
     if (seo !== undefined) updateData.seo = seo;
+
+    // Check if post is a guest submission to trigger email notifications
+    const currentPost = await postService.getPost(postId);
+    if (currentPost && currentPost.meta?.is_guest_submission === 'true') {
+      const guestEmail = currentPost.meta?.guest_author_email;
+      const guestName = currentPost.meta?.guest_author_name || 'Guest Contributor';
+
+      if (updateData.status === 'published' && currentPost.status !== 'published' && guestEmail) {
+        const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://appluxe.com/blog';
+        const articleUrl = `${origin}/${currentPost.slug}`;
+        
+        sendContributorApprovedAlert({
+          toEmail: guestEmail,
+          authorName: guestName,
+          title: currentPost.title,
+          articleUrl
+        }).catch(err => console.error('Error sending approval email:', err.message));
+      } else if (updateData.status === 'draft' && currentPost.status === 'pending_review' && guestEmail) {
+        const reviewNotes = meta?.review_notes || 'Please revise your content and submit again.';
+        const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://appluxe.com/blog';
+        const resubmitUrl = `${origin}/posts/submit`;
+        
+        sendContributorRejectedAlert({
+          toEmail: guestEmail,
+          authorName: guestName,
+          title: currentPost.title,
+          reviewNotes,
+          resubmitUrl
+        }).catch(err => console.error('Error sending rejection email:', err.message));
+      }
+    }
 
     await postService.updatePost(postId, updateData, tagIds);
     return NextResponse.json({ success: true });

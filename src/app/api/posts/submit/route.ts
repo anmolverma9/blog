@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { postService } from '@/modules/posts';
 import { userService } from '@/modules/users';
+import { settingsService } from '@/modules/settings';
 import pool from '@/lib/db';
+import Stripe from 'stripe';
+import { sendAdminSubmissionAlert } from '@/lib/mailer';
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,11 +25,11 @@ export async function POST(req: NextRequest) {
       .trim();
 
     // Check if session exists
-    const session = await getSession();
+    const sessionUser = await getSession();
     let authorId: number | null = null;
 
-    if (session) {
-      const author = await userService.getAuthorByUserId(session.id);
+    if (sessionUser) {
+      const author = await userService.getAuthorByUserId(sessionUser.id);
       if (author) {
         authorId = author.id!;
       }
@@ -43,12 +46,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Fetch settings to check if guest posting is paid
+    const settings = await settingsService.getSettings();
+    const isPaid = settings.guest_posting_paid === 'true';
+
     const newPost = {
       title,
       slug,
       content,
       summary: summary || '',
-      status: 'pending_review', // Submitted directly for editorial approval
+      status: isPaid ? 'pending_payment' : 'pending_review', // Pending payment if paid, pending review if free
       author_id: authorId!,
       category_id: category_id ? Number(category_id) : null,
       language_code: 'en',
@@ -68,6 +75,49 @@ export async function POST(req: NextRequest) {
     };
 
     const id = await postService.createPost(newPost, tagIds || []);
+
+    if (isPaid) {
+      const stripeSecretKey = settings.stripe_secret_key;
+      if (!stripeSecretKey) {
+        throw new Error('Stripe is not configured correctly on this server.');
+      }
+
+      // Initialize Stripe
+      const stripe = new Stripe(stripeSecretKey);
+      
+      const checkSession = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `Guest Post Submission: ${title}`,
+              description: 'Editorial review and publication fee.',
+            },
+            unit_amount: Math.round(Number(settings.guest_posting_price || '10.00') * 100),
+          },
+          quantity: 1,
+        }],
+        mode: 'payment',
+        success_url: `${req.nextUrl.origin}/posts/submit/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.nextUrl.origin}/posts/submit/cancel`,
+        metadata: {
+          postId: id.toString(),
+        }
+      });
+
+      return NextResponse.json({ success: true, sessionId: checkSession.id, checkoutUrl: checkSession.url });
+    }
+
+    // Send admin submission email alert for free submissions
+    const dashboardUrl = `${req.nextUrl.origin}/admin/editorial`;
+    sendAdminSubmissionAlert({
+      title,
+      authorName: guest_name,
+      authorEmail: guest_email,
+      dashboardUrl,
+    }).catch(err => console.error('Failed to send admin submission email alert:', err.message));
+
     return NextResponse.json({ success: true, id });
   } catch (err: any) {
     console.error('Guest submission API error:', err.message);

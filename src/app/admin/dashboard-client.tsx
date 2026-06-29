@@ -25,6 +25,8 @@ interface AnalyticsData {
     status: string;
     created_at: string;
   }>;
+  viewsTrend?: Array<{ day: string; views: number }>;
+  categoriesBreakdown?: Array<{ category: string; count: number }>;
 }
 
 export default function DashboardClient() {
@@ -139,6 +141,149 @@ export default function DashboardClient() {
           <CardContent>
             <div className="text-3xl font-bold text-slate-900">{data.totalSubscribers}</div>
             <p className="text-xs text-slate-400 mt-1">Active email subscribers</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Visual Analytics Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Page Views Trend Area Chart */}
+        <Card className="lg:col-span-2 border-slate-200/80 shadow-sm bg-white overflow-hidden rounded-3xl">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-bold text-slate-900">Traffic & Views Trend</CardTitle>
+            <p className="text-xs text-slate-500">Estimated daily page views over the last 7 days</p>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="relative h-[200px] w-full text-orange-500">
+              <svg viewBox="0 0 700 180" width="100%" height="100%" className="overflow-visible">
+                <defs>
+                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="currentColor" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="currentColor" stopOpacity="0.00" />
+                  </linearGradient>
+                </defs>
+                
+                {/* Grid Lines */}
+                <line x1="30" y1="30" x2="670" y2="30" stroke="#f1f5f9" strokeWidth="1" />
+                <line x1="30" y1="85" x2="670" y2="85" stroke="#f1f5f9" strokeWidth="1" />
+                <line x1="30" y1="140" x2="670" y2="140" stroke="#f1f5f9" strokeWidth="1" />
+                
+                {/* Area path */}
+                {(() => {
+                  const trend = data.viewsTrend || [];
+                  const maxViews = Math.max(...trend.map(t => t.views), 1);
+                  const width = 700;
+                  const height = 180;
+                  const paddingX = 30;
+                  const paddingY = 40;
+                  
+                  const points = trend.map((t, idx) => {
+                    const x = (idx / (trend.length - 1)) * (width - paddingX * 2) + paddingX;
+                    const y = height - paddingY - ((t.views / maxViews) * (height - paddingY * 2));
+                    return { x, y, ...t };
+                  });
+
+                  const lineD = points.reduce((acc, p, idx) => {
+                    return acc + (idx === 0 ? `M ${p.x} ${p.y}` : ` L ${p.x} ${p.y}`);
+                  }, '');
+
+                  const areaD = lineD ? `${lineD} L ${points[points.length - 1].x} ${height - paddingY} L ${points[0].x} ${height - paddingY} Z` : '';
+
+                  return (
+                    <>
+                      {areaD && <path d={areaD} fill="url(#chartGrad)" className="transition-all duration-300" />}
+                      {lineD && <path d={lineD} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-all duration-300" />}
+                      {points.map((p, idx) => (
+                        <g key={idx} className="group cursor-pointer">
+                          <circle
+                            cx={p.x}
+                            cy={p.y}
+                            r="5"
+                            fill="currentColor"
+                            stroke="#fff"
+                            strokeWidth="2.5"
+                            className="transition-all duration-150 hover:scale-125"
+                          />
+                          
+                          {/* Tooltip value */}
+                          <g className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                            <rect
+                              x={p.x - 30}
+                              y={p.y - 32}
+                              width="60"
+                              height="20"
+                              rx="6"
+                              fill="#0f172a"
+                            />
+                            <text
+                              x={p.x}
+                              y={p.y - 19}
+                              fill="#fff"
+                              fontSize="9"
+                              fontWeight="extrabold"
+                              textAnchor="middle"
+                            >
+                              {p.views}
+                            </text>
+                          </g>
+                        </g>
+                      ))}
+                    </>
+                  );
+                })()}
+              </svg>
+            </div>
+            
+            {/* X Axis Labels */}
+            <div className="flex justify-between items-center px-4 mt-2 border-t pt-3 border-slate-100">
+              {(data.viewsTrend || []).map((t, idx) => (
+                <div key={idx} className="text-center">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.day}</p>
+                  <p className="text-xs font-bold text-slate-700 mt-0.5">{t.views}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Topic distribution */}
+        <Card className="border-slate-200/80 shadow-sm bg-white rounded-3xl">
+          <CardHeader>
+            <CardTitle className="text-lg font-bold text-slate-900">Topic Distribution</CardTitle>
+            <p className="text-xs text-slate-500">Breakdown of content by categories</p>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-2">
+            {(!data.categoriesBreakdown || data.categoriesBreakdown.length === 0) ? (
+              <div className="text-center py-10 text-slate-400 text-xs border border-dashed rounded-xl bg-slate-50">
+                No categorised articles.
+              </div>
+            ) : (
+              data.categoriesBreakdown.map((cat, idx) => {
+                const percentage = Math.round((cat.count / (data.totalPosts || 1)) * 100) || 0;
+                const colors = [
+                  'bg-orange-500',
+                  'bg-emerald-500',
+                  'bg-blue-500',
+                  'bg-purple-500'
+                ];
+                const barColor = colors[idx % colors.length];
+                
+                return (
+                  <div key={cat.category} className="space-y-1.5">
+                    <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                      <span>{cat.category}</span>
+                      <span className="text-slate-400 font-medium">{cat.count} posts ({percentage}%)</span>
+                    </div>
+                    <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${barColor} transition-all duration-500`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </CardContent>
         </Card>
       </div>

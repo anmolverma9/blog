@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Save, CheckCircle, Palette, Check, Mail, Sliders, Code, Upload } from 'lucide-react';
+import { Loader2, Save, CheckCircle, Palette, Check, Mail, Sliders, Code, Upload, CreditCard } from 'lucide-react';
 import { THEME_PRESETS, generateThemeStyle } from '@/lib/theme';
 
 export default function SettingsClient() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'mail' | 'analytics'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'mail' | 'analytics' | 'payments'>('general');
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
   // Form states
@@ -23,6 +23,13 @@ export default function SettingsClient() {
   const [gaId, setGaId] = useState('');
   const [headerScripts, setHeaderScripts] = useState('');
   const [footerScripts, setFooterScripts] = useState('');
+
+  // Stripe Payments
+  const [guestPostingPaid, setGuestPostingPaid] = useState('false');
+  const [guestPostingPrice, setGuestPostingPrice] = useState('10.00');
+  const [stripePublishableKey, setStripePublishableKey] = useState('');
+  const [stripeSecretKey, setStripeSecretKey] = useState('');
+  const [stripeWebhookSecret, setStripeWebhookSecret] = useState('');
 
   // SMTP
   const [smtpHost, setSmtpHost] = useState('');
@@ -51,6 +58,11 @@ export default function SettingsClient() {
           if (data.smtp_pass) setSmtpPass(data.smtp_pass);
           if (data.smtp_from_email) setSmtpFromEmail(data.smtp_from_email);
           if (data.smtp_from_name) setSmtpFromName(data.smtp_from_name);
+          if (data.guest_posting_paid) setGuestPostingPaid(data.guest_posting_paid);
+          if (data.guest_posting_price) setGuestPostingPrice(data.guest_posting_price);
+          if (data.stripe_publishable_key) setStripePublishableKey(data.stripe_publishable_key);
+          if (data.stripe_secret_key) setStripeSecretKey(data.stripe_secret_key);
+          if (data.stripe_webhook_secret) setStripeWebhookSecret(data.stripe_webhook_secret);
         }
       } catch (err) {
         console.error('Failed to load settings:', err);
@@ -131,6 +143,11 @@ export default function SettingsClient() {
           smtp_pass: smtpPass,
           smtp_from_email: smtpFromEmail,
           smtp_from_name: smtpFromName,
+          guest_posting_paid: guestPostingPaid,
+          guest_posting_price: guestPostingPrice,
+          stripe_publishable_key: stripePublishableKey,
+          stripe_secret_key: stripeSecretKey,
+          stripe_webhook_secret: stripeWebhookSecret,
         }),
       });
 
@@ -160,6 +177,7 @@ export default function SettingsClient() {
     { id: 'general', label: 'General & Brand', icon: Sliders },
     { id: 'mail', label: 'Mail Server (SMTP)', icon: Mail },
     { id: 'analytics', label: 'Analytics & Injection', icon: Code },
+    { id: 'payments', label: 'Stripe Payments', icon: CreditCard },
   ] as const;
 
   return (
@@ -448,6 +466,89 @@ export default function SettingsClient() {
                     placeholder="<!-- Paste footer scripts here, e.g. chat widgets, heatmaps -->"
                     className="font-mono text-xs h-32 border-slate-200 focus:border-orange-500 focus:ring-orange-500/20"
                   />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* ── Stripe Payments Tab ── */}
+        {activeTab === 'payments' && (
+          <div className="animate-in fade-in-50 duration-200">
+            <Card className="border-slate-200 shadow-sm bg-white">
+              <CardHeader>
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-orange-500" />
+                  Stripe Payment Configuration
+                </CardTitle>
+                <CardDescription>
+                  Configure Stripe payment settings to charge contributors for submitting guest posts.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Paid Guest Posting</label>
+                    <select
+                      value={guestPostingPaid}
+                      onChange={(e) => setGuestPostingPaid(e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    >
+                      <option value="false">Free Submissions</option>
+                      <option value="true">Paid Submissions</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Submission Price (USD)</label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={guestPostingPrice}
+                      onChange={(e) => setGuestPostingPrice(e.target.value)}
+                      placeholder="10.00"
+                      className="h-10 border-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="h-px bg-slate-100 my-2" />
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Stripe Publishable Key</label>
+                  <Input
+                    value={stripePublishableKey}
+                    onChange={(e) => setStripePublishableKey(e.target.value)}
+                    placeholder="pk_test_..."
+                    className="h-10 border-slate-200 font-mono text-sm"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Stripe Secret Key</label>
+                  <Input
+                    type="password"
+                    value={stripeSecretKey}
+                    onChange={(e) => setStripeSecretKey(e.target.value)}
+                    placeholder="sk_test_..."
+                    className="h-10 border-slate-200 font-mono text-sm"
+                    autoComplete="new-password"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Stripe Webhook Secret</label>
+                  <Input
+                    type="password"
+                    value={stripeWebhookSecret}
+                    onChange={(e) => setStripeWebhookSecret(e.target.value)}
+                    placeholder="whsec_..."
+                    className="h-10 border-slate-200 font-mono text-sm"
+                    autoComplete="new-password"
+                  />
+                  <p className="text-[10px] text-slate-400">
+                    Required to process Stripe payment events and automatically mark posts as `pending_review`.
+                  </p>
                 </div>
               </CardContent>
             </Card>
